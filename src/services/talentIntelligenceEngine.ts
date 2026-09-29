@@ -1,4 +1,4 @@
-import {
+import type {
   TalentMapInput,
   TalentMapReport,
   JDSourceInfo,
@@ -9,8 +9,8 @@ import {
   AvailabilityBand,
   DifficultyBand,
   EmployerLandscapeItem,
-} from '../types';
-import { detectRoleDomain } from '../data/competitorAndTalentPools';
+} from '../types.ts';
+import { detectRoleDomain } from '../data/competitorAndTalentPools.ts';
 
 // ============================================================================
 // 1. ADVANCED UNIVERSAL JOB DESCRIPTION HEURISTIC PARSER

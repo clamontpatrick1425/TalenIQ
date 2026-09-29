@@ -43,13 +43,13 @@ export const ReportSectionsView: React.FC<ReportSectionsViewProps> = ({ report }
   });
 
   const categories = [
-    { id: 'all', label: 'All 23 Sections' },
+    { id: 'all', label: 'All Sections' },
     { id: 'role', label: '1-4: Role & Geo' },
     { id: 'supply', label: '5-8: Supply & Skills' },
     { id: 'market', label: '9-12: Employers & Flow' },
     { id: 'sourcing', label: '13-15: Archetypes & Search' },
     { id: 'comp', label: '16-18: Comp & Risk' },
-    { id: 'exec', label: '19-23: Strategy & Brief' },
+    { id: 'exec', label: '19-23: Strategy & Execution' },
   ];
 
   const handleToggleSection = (id: number) => {

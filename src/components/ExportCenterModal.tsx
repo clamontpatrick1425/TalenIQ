@@ -594,7 +594,7 @@ ${report.candidateArchetypes.map((a) => `  - *${a.name} (${a.archetypeType})*: $
               <div>
                 <h4 className="text-sm font-bold text-white">Full JSON Package (.json)</h4>
                 <p className="text-xs text-slate-300 mt-0.5">
-                  Complete 23-part raw data payload for custom ATS/CRM integrations.
+                  Complete talent intelligence raw data payload for custom ATS/CRM integrations.
                 </p>
               </div>
             </div>

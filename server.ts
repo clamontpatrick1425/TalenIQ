@@ -3,7 +3,7 @@ import path from 'path';
 import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI, Type } from '@google/genai';
 import { parseJDHeuristically, generateSynthesizedTalentMap } from './src/services/talentIntelligenceEngine.ts';
-import { TalentMapInput, JDSourceInfo, TalentMapReport } from './src/types.ts';
+import type { TalentMapInput, JDSourceInfo, TalentMapReport } from './src/types.ts';
 
 interface GeminiCallParams {
   contents: any;
@@ -83,7 +83,7 @@ async function callGeminiWithResilience(
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
   app.use(express.json({ limit: '15mb' }));
 
@@ -668,7 +668,12 @@ Deliver direct, actionable strategy and specific recommendations.`;
   });
 
   // Vite integration
-  if (process.env.NODE_ENV !== 'production') {
+  const isProduction =
+    process.env.NODE_ENV === 'production' ||
+    Boolean(process.env.K_SERVICE) ||
+    Boolean(process.env.PORT && process.env.PORT !== '3000');
+
+  if (!isProduction) {
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: 'spa',

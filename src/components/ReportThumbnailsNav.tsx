@@ -105,14 +105,14 @@ export const ReportThumbnailsNav: React.FC<ReportThumbnailsNavProps> = ({
           <div>
             <div className="flex items-center gap-2">
               <h4 className="text-sm font-bold text-white tracking-wide">
-                23-Section Visual Navigation Thumbnails
+                Talent Map Section Navigator
               </h4>
               <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-cyan-500/15 border border-cyan-500/30 text-cyan-300">
                 {expandedCount}/{totalCount} Expanded
               </span>
             </div>
-            <p className="text-xs text-slate-400 hidden sm:block">
-              Click any thumbnail to immediately jump to and highlight that section in the report
+            <p className="text-xs text-slate-300 hidden sm:block">
+              Click any section to immediately jump to and highlight that section in the report
             </p>
           </div>
         </div>
@@ -124,7 +124,7 @@ export const ReportThumbnailsNav: React.FC<ReportThumbnailsNavProps> = ({
             type="button"
             onClick={onExpandAll}
             className="px-3 py-1.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700/80 text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition-all active:scale-95"
-            title="Expand all 23 report sections"
+            title="Expand all report sections"
           >
             <ChevronsDownUp className="w-3.5 h-3.5 text-cyan-400" />
             <span>Expand All</span>
@@ -135,7 +135,7 @@ export const ReportThumbnailsNav: React.FC<ReportThumbnailsNavProps> = ({
             type="button"
             onClick={onCollapseAll}
             className="px-3 py-1.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700/80 text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition-all active:scale-95"
-            title="Collapse all 23 report sections"
+            title="Collapse all report sections"
           >
             <ChevronsUpDown className="w-3.5 h-3.5 text-amber-400" />
             <span>Collapse All</span>

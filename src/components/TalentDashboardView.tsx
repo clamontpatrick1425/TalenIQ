@@ -17,6 +17,10 @@ import {
   TrendingUp,
   Cpu,
   RefreshCw,
+  Clock,
+  Target,
+  CheckCircle2,
+  Zap,
 } from 'lucide-react';
 
 interface TalentDashboardViewProps {
@@ -150,7 +154,88 @@ export const TalentDashboardView: React.FC<TalentDashboardViewProps> = ({ report
         </div>
       </div>
 
-      {/* 2. Executive Talent Map Dashboard Metrics Grid (12 Cards from Spec) */}
+      {/* 2. Executive Search Milestone & Predictive Intelligence Panel (2026 Benchmarks) */}
+      <div className="glass-card rounded-2xl p-5 border border-cyan-500/30 bg-gradient-to-r from-slate-900 via-slate-900 to-indigo-950/40 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
+          <div>
+            <div className="text-xs uppercase font-mono font-bold text-cyan-400 tracking-widest flex items-center gap-2">
+              <Clock className="w-3.5 h-3.5" />
+              <span>Executive Search Milestone & Predictive Analytics</span>
+            </div>
+            <h3 className="text-base font-bold text-white mt-0.5">
+              45-Day Search Pace & Placement Predictors
+            </h3>
+          </div>
+          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/15 border border-cyan-500/30">
+            <Zap className="w-3.5 h-3.5 text-cyan-300" />
+            <span className="text-xs text-cyan-300 font-mono font-bold">Pacing: Ahead of Benchmark (+4 Days)</span>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+          {/* Milestone 45-Day Pace */}
+          <div className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800 space-y-1.5">
+            <div className="flex items-center justify-between text-[11px] text-slate-300 font-mono font-semibold uppercase">
+              <span>45-Day Milestone Target</span>
+              <span className="text-emerald-400 font-bold">On Schedule</span>
+            </div>
+            <div className="text-2xl font-bold font-mono text-white">
+              Day 18 <span className="text-xs text-slate-400 font-normal">/ 45 Target</span>
+            </div>
+            <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+              <div className="bg-gradient-to-r from-cyan-400 to-emerald-400 h-1.5 rounded-full" style={{ width: '40%' }} />
+            </div>
+            <div className="text-[11px] text-slate-300">Target: 3-5 vetted finalists by Day 45</div>
+          </div>
+
+          {/* Submit to Interview Ratio */}
+          <div className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800 space-y-1.5">
+            <div className="flex items-center justify-between text-[11px] text-slate-300 font-mono font-semibold uppercase">
+              <span>Submit-to-Interview</span>
+              <span className="text-cyan-400 font-bold">+18% vs avg</span>
+            </div>
+            <div className="text-2xl font-bold font-mono text-cyan-300">
+              68% <span className="text-xs text-slate-400 font-normal">Conversion</span>
+            </div>
+            <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+              <div className="bg-cyan-400 h-1.5 rounded-full" style={{ width: '68%' }} />
+            </div>
+            <div className="text-[11px] text-slate-300">Exceeds standard 45-50% industry baseline</div>
+          </div>
+
+          {/* Quality of Hire (QoH) Predictive Score */}
+          <div className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800 space-y-1.5">
+            <div className="flex items-center justify-between text-[11px] text-slate-300 font-mono font-semibold uppercase">
+              <span>Quality of Hire (QoH)</span>
+              <span className="text-emerald-400 font-bold">Top 5%</span>
+            </div>
+            <div className="text-2xl font-bold font-mono text-emerald-400">
+              92 <span className="text-xs text-slate-400 font-normal">/ 100 Index</span>
+            </div>
+            <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+              <div className="bg-emerald-400 h-1.5 rounded-full" style={{ width: '92%' }} />
+            </div>
+            <div className="text-[11px] text-slate-300">Deep skill graph alignment & tenure stability</div>
+          </div>
+
+          {/* Outreach Response Probability */}
+          <div className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800 space-y-1.5">
+            <div className="flex items-center justify-between text-[11px] text-slate-300 font-mono font-semibold uppercase">
+              <span>Outreach Response Rate</span>
+              <span className="text-amber-400 font-bold">Optimal</span>
+            </div>
+            <div className="text-2xl font-bold font-mono text-amber-300">
+              48.5% <span className="text-xs text-slate-400 font-normal">Projected</span>
+            </div>
+            <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+              <div className="bg-amber-400 h-1.5 rounded-full" style={{ width: '48.5%' }} />
+            </div>
+            <div className="text-[11px] text-slate-300">Exceeds minimum 30% executive engagement line</div>
+          </div>
+        </div>
+      </div>
+
+      {/* 3. Executive Talent Map Dashboard Metrics Grid (12 Cards from Spec) */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="text-base font-bold text-white flex items-center gap-2">

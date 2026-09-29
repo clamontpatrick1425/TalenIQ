@@ -886,7 +886,7 @@ export const IntakeView: React.FC<IntakeViewProps> = ({ onGenerateReport, isGene
                 {isGenerating ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin text-white" />
-                    <span>Synthesizing 23-Part Talent Market Map...</span>
+                    <span>Synthesizing Talent Market Intelligence Map...</span>
                   </>
                 ) : (
                   <>

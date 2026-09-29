@@ -129,7 +129,7 @@ export const SourcingPlanView: React.FC<SourcingPlanViewProps> = ({
               Detailed Sourcing & Recruiting Plan
             </h1>
             <p className="text-xs text-slate-300 mt-1 max-w-2xl">
-              Synthesized from the 23-Part Talent Map calculations and Sourcing War Room metrics. 
+              Synthesized from the comprehensive Talent Market Map calculations and Sourcing War Room metrics. 
               Provides exact funnel volume math, competitor poaching blueprints, ready-to-run Boolean strings, 
               multi-touch sequences, and week-by-week execution milestones.
             </p>

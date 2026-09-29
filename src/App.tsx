@@ -29,6 +29,8 @@ import {
   Bot,
   Sun,
   Moon,
+  Contrast,
+  Eye,
   Sparkles,
   Layers,
   ChevronRight,
@@ -78,10 +80,11 @@ export default function App() {
 
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [isCopilotOpen, setIsCopilotOpen] = useState<boolean>(false);
-  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+  type ThemeMode = 'dark' | 'light' | 'high-contrast';
+  const [theme, setTheme] = useState<ThemeMode>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('talentiq-theme');
-      if (saved === 'dark' || saved === 'light') return saved;
+      if (saved === 'dark' || saved === 'light' || saved === 'high-contrast') return saved as ThemeMode;
       if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
         return 'light';
       }
@@ -92,16 +95,18 @@ export default function App() {
   // Sync theme with DOM and localStorage
   useEffect(() => {
     localStorage.setItem('talentiq-theme', theme);
+    document.documentElement.classList.remove('light', 'dark', 'high-contrast');
+    document.body.classList.remove('light', 'dark', 'high-contrast');
+
     if (theme === 'light') {
       document.documentElement.classList.add('light');
-      document.documentElement.classList.remove('dark');
       document.body.classList.add('light');
-      document.body.classList.remove('dark');
+    } else if (theme === 'high-contrast') {
+      document.documentElement.classList.add('high-contrast');
+      document.body.classList.add('high-contrast');
     } else {
       document.documentElement.classList.add('dark');
-      document.documentElement.classList.remove('light');
       document.body.classList.add('dark');
-      document.body.classList.remove('light');
     }
   }, [theme]);
 
@@ -195,7 +200,7 @@ export default function App() {
   };
 
   return (
-    <div className={`min-h-screen gradient-bg ${theme} text-slate-100 font-sans antialiased flex flex-col selection:bg-indigo-500 selection:text-white`}>
+    <div className={`min-h-screen gradient-bg ${theme} ${theme === 'light' ? 'text-slate-900' : 'text-slate-100'} font-sans antialiased flex flex-col selection:bg-indigo-500 selection:text-white`}>
       {/* Top Main Navigation Header */}
       <header className="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800/80 transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
@@ -204,12 +209,9 @@ export default function App() {
             <span className="text-xl font-bold tracking-tight text-white">
               TalentIQ
             </span>
-            <span className="text-[10px] uppercase font-mono font-bold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 glow-subtle">
-              23-Part Map Engine
-            </span>
-            <span className="hidden sm:inline-flex items-center gap-1.5 text-[10px] font-mono text-cyan-400/90 bg-cyan-950/40 border border-cyan-800/40 px-2 py-0.5 rounded-full">
+            <span className="inline-flex items-center gap-1.5 text-[10px] font-mono font-bold text-cyan-400/90 bg-cyan-950/40 border border-cyan-800/40 px-2.5 py-0.5 rounded-full">
               <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 glow-dot-cyan"></span>
-              v2.5 Live
+              Market Intelligence Platform
             </span>
           </div>
 
@@ -264,7 +266,7 @@ export default function App() {
               }`}
             >
               <Layers className="w-3.5 h-3.5" />
-              <span>23-Part Talent Map</span>
+              <span>Talent Market Map</span>
             </button>
 
             <button
@@ -303,30 +305,48 @@ export default function App() {
               isSaving={isAutoSaving}
             />
 
-            {/* Global Dark / Light Mode Toggle */}
-            <button
-              id="btn-toggle-theme"
-              onClick={toggleTheme}
-              aria-label={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-              title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
-                theme === 'dark'
-                  ? 'bg-slate-800/80 hover:bg-slate-700 text-amber-300 border-slate-700/80 hover:border-amber-400/50'
-                  : 'bg-white hover:bg-slate-100 text-indigo-600 border-slate-300 hover:border-indigo-400/50 shadow-xs'
-              }`}
-            >
-              {theme === 'dark' ? (
-                <>
-                  <Sun className="w-3.5 h-3.5 text-amber-300" />
-                  <span className="hidden xl:inline text-slate-300 text-[11px]">Light</span>
-                </>
-              ) : (
-                <>
-                  <Moon className="w-3.5 h-3.5 text-indigo-600" />
-                  <span className="hidden xl:inline text-slate-700 text-[11px]">Dark</span>
-                </>
-              )}
-            </button>
+            {/* 3-Way Theme & Contrast Mode Switcher */}
+            <div className="flex items-center p-0.5 bg-slate-950/70 border border-slate-700/80 rounded-xl text-xs shadow-inner">
+              <button
+                type="button"
+                onClick={() => setTheme('dark')}
+                title="Dark Mode"
+                className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg font-semibold transition-all cursor-pointer ${
+                  theme === 'dark'
+                    ? 'bg-slate-800 text-amber-300 shadow-sm border border-slate-600'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <Moon className="w-3.5 h-3.5" />
+                <span className="hidden xl:inline text-[11px]">Dark</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setTheme('light')}
+                title="Light Mode (Crisp White)"
+                className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg font-semibold transition-all cursor-pointer ${
+                  theme === 'light'
+                    ? 'bg-white text-indigo-700 shadow-sm border border-slate-300 font-bold'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <Sun className="w-3.5 h-3.5" />
+                <span className="hidden xl:inline text-[11px]">Light</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setTheme('high-contrast')}
+                title="High Contrast Mode (WCAG AAA - Ultra Sharp)"
+                className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg font-semibold transition-all cursor-pointer ${
+                  theme === 'high-contrast'
+                    ? 'bg-black text-cyan-300 shadow-sm border-2 border-cyan-400 font-bold ring-1 ring-cyan-400'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <Contrast className="w-3.5 h-3.5" />
+                <span className="hidden xl:inline text-[11px]">Contrast</span>
+              </button>
+            </div>
 
             {/* Export & Distribution Center Button */}
             {report && (
@@ -385,7 +405,7 @@ export default function App() {
               activeTab === 'report' ? 'accent-gradient text-white glow font-bold' : 'text-slate-400'
             }`}
           >
-            23-Part Map
+            Talent Map
           </button>
           <button
             onClick={() => setActiveTab('sourcing')}
@@ -570,7 +590,7 @@ export default function App() {
               <span className="text-white font-semibold">TalentIQ Enterprise</span>
             </div>
             <span className="text-slate-600 hidden sm:inline">•</span>
-            <span className="hidden sm:inline">23-Part Market Mapping Engine</span>
+            <span className="hidden sm:inline">Executive Market Intelligence Platform</span>
           </div>
 
           <div className="flex items-center gap-6 text-[11px] font-mono uppercase tracking-wider text-slate-400">

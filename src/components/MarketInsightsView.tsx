@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { TalentMapReport, SeniorityLevel } from '../types';
 import { CompensationAnalyzer } from './CompensationAnalyzer';
 import { CompetitorHiringIntensityChart } from './CompetitorHiringIntensityChart';
+import { CompanyPoachingHeatmap } from './CompanyPoachingHeatmap';
 import { DataSourcesAuditor } from './DataSourcesAuditor';
 import {
   DollarSign,
@@ -51,7 +52,7 @@ interface MarketInsightsViewProps {
 }
 
 export const MarketInsightsView: React.FC<MarketInsightsViewProps> = ({ report }) => {
-  const [activeInsightTab, setActiveInsightTab] = useState<'analyzer' | 'competitors' | 'curves' | 'geo' | 'trends' | 'sources' | 'all'>('analyzer');
+  const [activeInsightTab, setActiveInsightTab] = useState<'analyzer' | 'poaching' | 'competitors' | 'curves' | 'geo' | 'trends' | 'sources' | 'all'>('analyzer');
   const [compViewMode, setCompViewMode] = useState<'total' | 'base' | 'equity'>('total');
   const [selectedIndustrySector, setSelectedIndustrySector] = useState<string>('ALL');
   const [selectedMetroFilter, setSelectedMetroFilter] = useState<string>(report.input.geography.location);
@@ -390,8 +391,51 @@ export const MarketInsightsView: React.FC<MarketInsightsViewProps> = ({ report }
         </div>
       </div>
 
+      {/* High-Probability Poaching Targets Hero Callout */}
+      <div className="p-4 bg-gradient-to-r from-rose-950/40 via-amber-950/30 to-slate-900 border border-rose-500/30 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 rounded-xl bg-rose-500/20 text-rose-300 shrink-0">
+            <Flame className="w-5 h-5 text-rose-400 animate-pulse" />
+          </div>
+          <div>
+            <h4 className="text-sm font-bold text-white flex items-center gap-2">
+              High-Probability Poaching Targets Identified for {roleTitle}
+              <span className="px-2 py-0.5 text-[10px] font-mono font-bold bg-rose-500/25 text-rose-300 border border-rose-500/40 rounded-full">
+                Live Heatmap
+              </span>
+            </h4>
+            <p className="text-xs text-slate-300 mt-0.5">
+              Identified competitor employers with high employee attrition triggers (Year 3-4 equity cliffs, RTO mandates, reorgs) matching your specific tech stack.
+            </p>
+          </div>
+        </div>
+        <button
+          onClick={() => setActiveInsightTab('poaching')}
+          className="px-4 py-2 rounded-xl accent-gradient text-white text-xs font-bold font-mono transition-all flex items-center justify-center gap-1.5 cursor-pointer shrink-0 glow hover:scale-[1.02]"
+        >
+          <span>Open Poaching Heatmap</span>
+          <ArrowUpRight className="w-3.5 h-3.5" />
+        </button>
+      </div>
+
       {/* Sub-Navigation Tabs Bar */}
       <div className="flex items-center gap-2 overflow-x-auto pb-1 border-b border-slate-800 text-xs font-mono">
+        <button
+          id="tab-insights-poaching"
+          onClick={() => setActiveInsightTab('poaching')}
+          className={`px-4 py-2 rounded-xl font-bold flex items-center gap-2 whitespace-nowrap transition-all cursor-pointer ${
+            activeInsightTab === 'poaching'
+              ? 'accent-gradient text-white glow'
+              : 'glass-card text-rose-300 hover:text-white hover:border-rose-500/50'
+          }`}
+        >
+          <Flame className="w-3.5 h-3.5 text-rose-400" />
+          <span>Poaching Targets Heatmap</span>
+          <span className="px-1.5 py-0.2 rounded text-[9px] bg-rose-500/20 text-rose-300 font-bold border border-rose-500/40">
+            High-Probability
+          </span>
+        </button>
+
         <button
           id="tab-insights-analyzer"
           onClick={() => setActiveInsightTab('analyzer')}
@@ -492,6 +536,11 @@ export const MarketInsightsView: React.FC<MarketInsightsViewProps> = ({ report }
           <span>Full Market View (All)</span>
         </button>
       </div>
+
+      {/* RENDER 0: Company Poaching Targets Heatmap */}
+      {(activeInsightTab === 'poaching' || activeInsightTab === 'all') && (
+        <CompanyPoachingHeatmap report={report} />
+      )}
 
       {/* RENDER 1: Compensation Analyzer */}
       {(activeInsightTab === 'analyzer' || activeInsightTab === 'all') && (
