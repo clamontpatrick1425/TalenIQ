@@ -1,5 +1,6 @@
 import express from 'express';
 import path from 'path';
+import fs from 'fs';
 import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI, Type } from '@google/genai';
 import { parseJDHeuristically, generateSynthesizedTalentMap } from './src/services/talentIntelligenceEngine.ts';
@@ -83,7 +84,9 @@ async function callGeminiWithResilience(
 
 async function startServer() {
   const app = express();
-  const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
+  // In Cloud Run production, Cloud Run specifies process.env.PORT (e.g. 8080).
+  // If occupied (e.g., local dev Nginx reverse proxy), it gracefully falls back to port 3000.
+  const targetPort = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
   app.use(express.json({ limit: '15mb' }));
 
@@ -667,11 +670,10 @@ Deliver direct, actionable strategy and specific recommendations.`;
     }
   });
 
-  // Vite integration
-  const isProduction =
-    process.env.NODE_ENV === 'production' ||
-    Boolean(process.env.K_SERVICE) ||
-    Boolean(process.env.PORT && process.env.PORT !== '3000');
+  // Vite & Static assets integration
+  const distPath = path.join(process.cwd(), 'dist');
+  const hasDist = fs.existsSync(path.join(distPath, 'index.html'));
+  const isProduction = process.env.NODE_ENV === 'production' && hasDist;
 
   if (!isProduction) {
     const vite = await createViteServer({
@@ -680,15 +682,25 @@ Deliver direct, actionable strategy and specific recommendations.`;
     });
     app.use(vite.middlewares);
   } else {
-    const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
     app.get('*', (req, res) => {
       res.sendFile(path.join(distPath, 'index.html'));
     });
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Talent Mapping AI Agent server running at http://0.0.0.0:${PORT}`);
+  const server = app.listen(targetPort, '0.0.0.0', () => {
+    console.log(`Talent Mapping AI Agent server running at http://0.0.0.0:${targetPort}`);
+  });
+
+  server.on('error', (err: any) => {
+    if (err.code === 'EADDRINUSE' && targetPort !== 3000) {
+      console.warn(`Port ${targetPort} is in use (e.g. by Nginx proxy). Falling back to port 3000...`);
+      app.listen(3000, '0.0.0.0', () => {
+        console.log(`Talent Mapping AI Agent server running at http://0.0.0.0:3000`);
+      });
+    } else {
+      console.error('Server listen error:', err);
+    }
   });
 }
 

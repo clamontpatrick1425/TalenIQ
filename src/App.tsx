@@ -14,6 +14,7 @@ import { MarketInsightsView } from './components/MarketInsightsView';
 import { CandidateTracker } from './components/CandidateTracker';
 import { SourcingPlanView } from './components/SourcingPlanView';
 import { AutoSaveIndicator } from './components/AutoSaveIndicator';
+import { LegalModal, LegalDocType } from './components/LegalModal';
 import {
   saveReportToStorage,
   loadReportFromStorage,
@@ -58,6 +59,8 @@ export default function App() {
   );
   const [isExportOpen, setIsExportOpen] = useState<boolean>(false);
   const [isAutoSaving, setIsAutoSaving] = useState<boolean>(false);
+  const [legalModalOpen, setLegalModalOpen] = useState<boolean>(false);
+  const [legalDocType, setLegalDocType] = useState<LegalDocType>('privacy');
 
   // Restore saved report from localStorage or generate from default preset
   const [report, setReport] = useState<TalentMapReport | null>(() => {
@@ -581,19 +584,58 @@ export default function App() {
         />
       )}
 
+      {/* Comprehensive Legal Documents Modal (Privacy Policy & Terms) */}
+      <LegalModal
+        isOpen={legalModalOpen}
+        initialDoc={legalDocType}
+        onClose={() => setLegalModalOpen(false)}
+      />
+
       {/* Sleek Status Footer */}
       <footer className="mt-auto border-t border-slate-800/80 bg-slate-900/90 py-5 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
-          <div className="flex items-center gap-6 text-slate-400 font-medium">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs">
+          <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-slate-400 font-medium">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-indigo-400 glow-dot"></span>
               <span className="text-white font-semibold">TalentIQ Enterprise</span>
             </div>
             <span className="text-slate-600 hidden sm:inline">•</span>
             <span className="hidden sm:inline">Executive Market Intelligence Platform</span>
+
+            {/* Legal Tabs & Disclosures */}
+            <span className="text-slate-600 hidden md:inline">•</span>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                id="footer-tab-privacy-policy"
+                onClick={() => {
+                  setLegalDocType('privacy');
+                  setLegalModalOpen(true);
+                }}
+                className="text-slate-400 hover:text-indigo-300 transition-colors flex items-center gap-1.5 cursor-pointer hover:underline text-xs"
+                title="View Comprehensive Privacy Policy & GDPR/CCPA Data Protection"
+              >
+                <ShieldCheck className="w-3.5 h-3.5 text-indigo-400" />
+                <span>Privacy Policy</span>
+              </button>
+              <span className="text-slate-700">|</span>
+              <button
+                type="button"
+                id="footer-tab-terms-conditions"
+                onClick={() => {
+                  setLegalDocType('terms');
+                  setLegalModalOpen(true);
+                }}
+                className="text-slate-400 hover:text-indigo-300 transition-colors flex items-center gap-1.5 cursor-pointer hover:underline text-xs"
+                title="View SaaS Terms & Conditions of Service"
+              >
+                <FileText className="w-3.5 h-3.5 text-indigo-400" />
+                <span>Terms &amp; Conditions</span>
+              </button>
+            </div>
           </div>
 
-          <div className="flex items-center gap-6 text-[11px] font-mono uppercase tracking-wider text-slate-400">
+          <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-[11px] font-mono uppercase tracking-wider text-slate-400">
             <div className="flex items-center gap-2">
               <span className="text-slate-500">Instance:</span>
               <span className="text-indigo-300 font-bold">US-EAST-1</span>
