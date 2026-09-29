@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { TalentMapReport, SeniorityLevel } from '../types';
 import { CompensationAnalyzer } from './CompensationAnalyzer';
 import { CompetitorHiringIntensityChart } from './CompetitorHiringIntensityChart';
+import { DataSourcesAuditor } from './DataSourcesAuditor';
 import {
   DollarSign,
   TrendingUp,
@@ -50,7 +51,7 @@ interface MarketInsightsViewProps {
 }
 
 export const MarketInsightsView: React.FC<MarketInsightsViewProps> = ({ report }) => {
-  const [activeInsightTab, setActiveInsightTab] = useState<'analyzer' | 'competitors' | 'curves' | 'geo' | 'trends' | 'all'>('analyzer');
+  const [activeInsightTab, setActiveInsightTab] = useState<'analyzer' | 'competitors' | 'curves' | 'geo' | 'trends' | 'sources' | 'all'>('analyzer');
   const [compViewMode, setCompViewMode] = useState<'total' | 'base' | 'equity'>('total');
   const [selectedIndustrySector, setSelectedIndustrySector] = useState<string>('ALL');
   const [selectedMetroFilter, setSelectedMetroFilter] = useState<string>(report.input.geography.location);
@@ -460,6 +461,22 @@ export const MarketInsightsView: React.FC<MarketInsightsViewProps> = ({ report }
         >
           <TrendingUp className="w-3.5 h-3.5" />
           <span>Availability & Seasonality</span>
+        </button>
+
+        <button
+          id="tab-insights-sources"
+          onClick={() => setActiveInsightTab('sources')}
+          className={`px-4 py-2 rounded-xl font-bold flex items-center gap-2 whitespace-nowrap transition-all cursor-pointer ${
+            activeInsightTab === 'sources'
+              ? 'accent-gradient text-white glow'
+              : 'glass-card text-slate-400 hover:text-white hover:border-slate-700'
+          }`}
+        >
+          <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+          <span>Authoritative Data Sources</span>
+          <span className="px-1.5 py-0.2 rounded text-[9px] bg-emerald-400/20 text-emerald-300 font-normal">
+            12 Verified
+          </span>
         </button>
 
         <button
@@ -873,6 +890,11 @@ export const MarketInsightsView: React.FC<MarketInsightsViewProps> = ({ report }
             </div>
           </div>
         </>
+      )}
+
+      {/* RENDER 6: Authoritative Market Intelligence & Data Sources Directory */}
+      {(activeInsightTab === 'sources' || activeInsightTab === 'all') && (
+        <DataSourcesAuditor />
       )}
     </div>
   );

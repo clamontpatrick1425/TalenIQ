@@ -421,3 +421,111 @@ export interface TrackedCandidate {
   createdAt: string;
   lastUpdated: string;
 }
+
+export interface SourcingFunnelMath {
+  profilesToSource: number;
+  outreachTarget: number;
+  responsesExpected: number;
+  responseRatePct: number;
+  screensCompleted: number;
+  screenPassRatePct: number;
+  hmInterviews: number;
+  hmPassRatePct: number;
+  finalLoops: number;
+  finalLoopPassRatePct: number;
+  offersExtended: number;
+  offerAcceptanceRatePct: number;
+  projectedHires: number;
+}
+
+export interface WeeklyRoadmapPhase {
+  week: string;
+  phase: string;
+  title: string;
+  recruiterMilestones: string[];
+  hiringManagerMilestones: string[];
+  kpiDeliverable: string;
+}
+
+export interface CompetitorPoachingTier {
+  tier: string;
+  tierLabel: string;
+  companies: string[];
+  tacticalAngle: string;
+  vulnerabilityNotes: string;
+  targetedSkills: string[];
+}
+
+export interface OutreachSequenceStep {
+  touchpoint: string;
+  timing: string;
+  channel: string;
+  subjectLine: string;
+  messageTemplate: string;
+  actionIntent: string;
+}
+
+export interface ScreeningRubricCategory {
+  category: string;
+  mustHaveIndicators: string[];
+  redFlagWarnings: string[];
+  interviewPrompt: string;
+}
+
+export interface SourcingPlanData {
+  roleTitle: string;
+  seniority: string;
+  location: string;
+  workModel: string;
+  industry: string;
+  targetHires: number;
+  timeToFillDays: number;
+  recruitingDifficultyScore: number;
+  recruitingDifficultyBand: string;
+  talentAvailabilityScore: number;
+  talentAvailabilityBand: string;
+  addressablePoolSize: number;
+  activePoolSize: number;
+  funnelMath: SourcingFunnelMath;
+  weeklyRoadmap: WeeklyRoadmapPhase[];
+  competitorTiers: CompetitorPoachingTier[];
+  booleanArsenal: Array<{
+    platform: string;
+    name: string;
+    query: string;
+    purpose: string;
+  }>;
+  outreachSequence: OutreachSequenceStep[];
+  screeningRubric: ScreeningRubricCategory[];
+  livePipelineSnapshot: {
+    identifiedCount: number;
+    screeningCount: number;
+    outreachedCount: number;
+    interviewingCount: number;
+    offeredCount: number;
+    totalActiveTracked: number;
+    sampleTrackedCandidates: Array<{
+      name: string;
+      title: string;
+      company: string;
+      stage: string;
+      matchScore: number;
+    }>;
+  };
+  riskMitigations: Array<{
+    risk: string;
+    severity: string;
+    mitigationAction: string;
+  }>;
+  slaCommitments: Array<{
+    processStep: string;
+    timeframe: string;
+    owner: string;
+  }>;
+  channelMix: Array<{
+    channel: string;
+    allocationPct: number;
+    expectedYield: string;
+  }>;
+}
+

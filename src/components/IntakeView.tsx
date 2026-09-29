@@ -4,6 +4,7 @@ import { parseJDHeuristically } from '../services/talentIntelligenceEngine';
 import { extractTextFromFile } from '../services/documentParser';
 import { saveIntakeDraftToStorage, loadIntakeDraftFromStorage } from '../services/storageService';
 import { ConfidenceBadge } from './ConfidenceBadge';
+import { SAMPLE_JD_PRESETS, SampleJDPreset } from '../data/sampleJDs';
 import {
   Upload,
   FileText,
@@ -264,6 +265,62 @@ export const IntakeView: React.FC<IntakeViewProps> = ({ onGenerateReport, isGene
       {/* ================= STEP 1: UPLOAD & PASTE ================= */}
       {currentStep === 1 && (
         <div className="space-y-6">
+          {/* Universal Capability Banner */}
+          <div className="p-4 bg-gradient-to-r from-cyan-950/40 via-indigo-950/40 to-slate-900 border border-cyan-500/30 rounded-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 glow-subtle">
+            <div className="flex items-start gap-3">
+              <div className="p-2 rounded-xl bg-cyan-500/20 text-cyan-300 shrink-0 mt-0.5">
+                <Sparkles className="w-5 h-5" />
+              </div>
+              <div>
+                <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                  Universal Job Description Competitive Intelligence
+                  <span className="px-2 py-0.5 text-[10px] font-mono bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 rounded-full">All Roles & Industries</span>
+                </h4>
+                <p className="text-xs text-slate-300 mt-0.5 leading-relaxed">
+                  Upload any job specification — <span className="text-slate-100 font-medium">Software, AI/ML, Product Management, Data, Cybersecurity, DevOps, Sales/GTM, Marketing, or Finance</span>. The engine performs full taxonomy extraction, talent supply sizing, and competitor poaching analysis.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Quick-Load Sample JD Presets */}
+          <div className="glass-card rounded-2xl p-4 border border-slate-800 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+                <FileText className="w-3.5 h-3.5 text-cyan-400" />
+                <span>Or Test With Diverse Preset Job Descriptions:</span>
+              </span>
+              <span className="text-[11px] text-slate-500 font-mono">Click to instantly populate</span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+              {SAMPLE_JD_PRESETS.map((preset) => (
+                <button
+                  key={preset.id}
+                  type="button"
+                  onClick={() => {
+                    setRawText(preset.jdText);
+                    setFileName(`${preset.id}.txt`);
+                    setFileSize('Preset Spec');
+                    setFileExtractStatus(`Loaded: ${preset.title}`);
+                  }}
+                  className="p-2.5 rounded-xl bg-slate-900/80 hover:bg-slate-800/90 border border-slate-800 hover:border-cyan-500/50 text-left transition-all group cursor-pointer flex flex-col justify-between"
+                >
+                  <div className="flex items-center justify-between text-[10px] font-mono text-cyan-400 mb-1">
+                    <span className="truncate">{preset.category}</span>
+                    <span className="text-slate-500 group-hover:text-cyan-300 transition-colors">Load &rarr;</span>
+                  </div>
+                  <div className="text-xs font-semibold text-slate-200 group-hover:text-white truncate">
+                    {preset.title}
+                  </div>
+                  <div className="text-[11px] text-slate-400 truncate mt-0.5">
+                    {preset.location} · {preset.seniority}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Primary Drop Zone */}
           <div
             onDragOver={handleDragOver}
@@ -285,7 +342,7 @@ export const IntakeView: React.FC<IntakeViewProps> = ({ onGenerateReport, isGene
 
             <div>
               <h3 className="text-lg font-bold text-white">
-                Upload Technical Job Description
+                Upload Any Job Description Document
               </h3>
               <p className="text-xs text-slate-300 mt-1.5 max-w-lg mx-auto leading-relaxed">
                 Drag and drop your hiring specification document or browse from your computer. Supports{' '}

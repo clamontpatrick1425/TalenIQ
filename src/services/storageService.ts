@@ -11,7 +11,7 @@ export interface IntakeDraftState {
 
 export interface NavigationState {
   activeTab: 'intake' | 'dashboard' | 'insights' | 'report' | 'sourcing' | 'executive';
-  sourcingSubTab: 'search' | 'tracker' | 'outreach';
+  sourcingSubTab: 'search' | 'tracker' | 'outreach' | 'plan';
   lastUpdated: string;
 }
 

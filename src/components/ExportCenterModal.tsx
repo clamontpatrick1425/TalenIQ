@@ -1,6 +1,12 @@
 import React, { useState } from 'react';
 import { TalentMapReport } from '../types';
 import { downloadStakeholderReportPDF } from '../services/pdfReportGenerator';
+import { downloadSourcingPlanPDF } from '../services/sourcingPlanPdfGenerator';
+import {
+  generateDetailedSourcingPlan,
+  generateSourcingPlanMarkdown,
+  generateSourcingPlanCSV,
+} from '../services/sourcingPlanGenerator';
 import {
   X,
   Download,
@@ -18,6 +24,8 @@ import {
   TrendingUp,
   FileDown,
   CheckCircle2,
+  Target,
+  ClipboardList,
 } from 'lucide-react';
 
 interface ExportCenterModalProps {
@@ -439,6 +447,33 @@ ${report.candidateArchetypes.map((a) => `  - *${a.name} (${a.archetypeType})*: $
           </button>
         </div>
 
+        {/* Highlighted Sourcing & Recruiting Plan PDF Download Banner */}
+        <div className="p-4 bg-gradient-to-r from-indigo-950/90 via-slate-900/90 to-cyan-950/90 border border-indigo-500/50 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 glow-subtle">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2 text-xs font-mono font-bold text-indigo-300">
+              <ClipboardList className="w-4 h-4 text-cyan-400" />
+              <span>Detailed Sourcing & Recruiting Plan (Multi-Page PDF)</span>
+              <span className="px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 text-[10px] font-mono font-bold uppercase border border-cyan-500/40">
+                Full Blueprint
+              </span>
+            </div>
+            <p className="text-xs text-slate-300">
+              Complete operational execution plan: exact funnel capacity math, 4-tier competitor poaching, Boolean search arsenal, 4-touch outreach copy, 8-week milestones, and screening rubrics.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              id="btn-download-sourcing-plan-pdf-modal"
+              onClick={() => downloadSourcingPlanPDF(report)}
+              className="px-5 py-2.5 accent-gradient text-white rounded-xl text-xs font-bold font-mono transition-all shadow-lg glow flex items-center justify-center gap-2 cursor-pointer hover:scale-[1.02]"
+            >
+              <Download className="w-4 h-4" />
+              <span>Download Plan PDF</span>
+            </button>
+          </div>
+        </div>
+
         {/* Highlighted Executive Brief PDF Download Banner */}
         <div className="p-4 bg-gradient-to-r from-cyan-950/80 to-indigo-950/80 border border-cyan-500/40 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 glow-subtle">
           <div className="space-y-1">
@@ -457,7 +492,7 @@ ${report.candidateArchetypes.map((a) => `  - *${a.name} (${a.archetypeType})*: $
             className="px-5 py-2.5 accent-gradient text-white rounded-xl text-xs font-bold font-mono transition-all shadow-lg glow flex items-center justify-center gap-2 cursor-pointer shrink-0"
           >
             <Download className="w-4 h-4" />
-            <span>Download PDF</span>
+            <span>Download Brief PDF</span>
           </button>
         </div>
 
@@ -583,6 +618,64 @@ ${report.candidateArchetypes.map((a) => `  - *${a.name} (${a.archetypeType})*: $
                 title="Copy JSON"
               >
                 {copiedFormat === 'json' ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+              </button>
+            </div>
+          </div>
+
+          {/* 5. Dedicated Sourcing & Recruiting Plan Markdown */}
+          <div className="glass-card-interactive rounded-xl p-4 flex flex-col justify-between space-y-3 sm:col-span-2 bg-gradient-to-r from-slate-900 via-indigo-950/30 to-slate-900 border border-indigo-500/30">
+            <div className="flex items-start gap-3">
+              <div className="p-2.5 rounded-lg bg-indigo-500/20 text-indigo-300">
+                <ClipboardList className="w-5 h-5" />
+              </div>
+              <div>
+                <h4 className="text-sm font-bold text-white">Sourcing & Recruiting Plan Markdown (.md)</h4>
+                <p className="text-xs text-slate-300 mt-0.5">
+                  Full tactical execution document with calculated funnel capacity mathematics, 4-tier competitor poaching, Boolean search queries, and 8-week roadmap formatted for Notion, Coda, or Jira.
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                onClick={() => {
+                  const plan = generateDetailedSourcingPlan(report);
+                  const md = generateSourcingPlanMarkdown(plan, report);
+                  downloadFile(
+                    md,
+                    `SourcingPlan_${roleTitle.replace(/\s+/g, '_')}_${metro}.md`,
+                    'text/markdown'
+                  );
+                }}
+                className="flex-1 py-2 rounded-lg bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-200 border border-indigo-500/40 text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 min-w-[160px]"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Download Sourcing Plan .MD</span>
+              </button>
+              <button
+                onClick={() => {
+                  const plan = generateDetailedSourcingPlan(report);
+                  const csv = generateSourcingPlanCSV(plan);
+                  downloadFile(
+                    csv,
+                    `SourcingPlan_${roleTitle.replace(/\s+/g, '_')}.csv`,
+                    'text/csv'
+                  );
+                }}
+                className="py-2 px-3.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-200 border border-emerald-500/40 text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5"
+              >
+                <FileSpreadsheet className="w-3.5 h-3.5" />
+                <span>CSV Tracker</span>
+              </button>
+              <button
+                onClick={() => {
+                  const plan = generateDetailedSourcingPlan(report);
+                  const md = generateSourcingPlanMarkdown(plan, report);
+                  handleCopy(md, 'plan-md');
+                }}
+                className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-all cursor-pointer"
+                title="Copy Sourcing Plan Markdown"
+              >
+                {copiedFormat === 'plan-md' ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
               </button>
             </div>
           </div>

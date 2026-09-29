@@ -127,13 +127,14 @@ async function startServer() {
         return res.json({ success: true, data: parsed, engine: 'heuristic-engine' });
       }
 
-      const systemPrompt = `You are a Senior Technical Talent Intelligence Sourcer and Recruiting Strategist.
-Your job is to parse a Job Description (JD) and extract structured fields according to the following strict rules:
+      const systemPrompt = `You are a Senior Talent Intelligence Sourcer and Labor Market Strategist.
+Your job is to parse ANY Job Description (JD) across any industry or function — whether AI/ML, Software Engineering, Data & Analytics, Product Management, Cybersecurity, DevOps, Sales & GTM, Marketing, Finance & Accounting, Legal, Human Resources, or Healthcare.
+Extract structured fields according to the following strict rules:
 1. Tag every extracted field with a confidence level:
-   - "verified": directly stated in the JD (e.g. "Location: Austin, TX", "Salary: $230k-$285k", "Title: Staff ML Engineer")
-   - "inferred": logically implied by context (e.g. a high-frequency trading firm implies Industry: FinTech; 8+ years exp implies Senior/Staff)
-   - "unknown": not mentioned or covered in the JD (e.g. Target Companies, Excluded Companies, Hiring Volume)
-2. DO NOT fabricate or invent target companies or excluded companies. Keep them as empty arrays tagged "unknown".
+   - "verified": directly stated in the JD (e.g. "Location: Austin, TX", "Salary: $230k-$285k", "Title: Senior Director of Product")
+   - "inferred": logically implied by context (e.g. a B2B SaaS platform implies Industry: Enterprise B2B SaaS; 8+ years exp implies Senior/Staff/Director)
+   - "unknown": not mentioned or covered in the JD
+2. DO NOT fabricate or invent target companies or excluded companies unless explicitly mentioned in the JD text.
 3. Return clean, valid JSON matching the specified schema.`;
 
       const prompt = `Extract all fields from the following Job Description text:
@@ -339,22 +340,21 @@ ${rawText.slice(0, 15000)}`;
       }
 
       // Attempt AI-powered strategic deep-dive with resilient retry
-      const prompt = `You are a Senior Talent Intelligence Strategist, Technical Recruiter, and Labor Market Analyst.
-Analyze the following role requirement and generate detailed strategic additions:
+      const prompt = `You are a Senior Talent Intelligence Strategist, Executive Recruiter, and Labor Market Analyst.
+Perform an in-depth competitive talent intelligence and labor market analysis for ANY uploaded job description across any domain or industry.
+Analyze the following role requirement:
 Role: ${input.role.value} (${input.seniority.value})
 Geography: ${input.geography.location} (${input.workModel.value})
 Industry: ${input.industry.value}
 Required Skills: ${input.skills.required.value.join(', ')}
-Technologies: ${input.technologies.value.join(', ')}
+Technologies / Platforms: ${input.technologies.value.join(', ')}
 Compensation Target: $${input.compensationTarget.min.toLocaleString()} - $${input.compensationTarget.max.toLocaleString()} ${input.compensationTarget.currency}
 
-Provide an enriched executive recruiting briefing, tailored competitor insights, Boolean search optimizations, and candidate messaging hooks in valid JSON.
-
-IMPORTANT for geographicContext: base this ONLY on ${input.geography.location} specifically — real companies with an actual
-engineering/hiring presence there, real universities or bootcamps that feed that region's talent pool, and real nearby
-metros with an approximate driving distance. Do not default to generic "big tech" hubs (Bay Area, Austin, Seattle) unless
-${input.geography.location} genuinely is one of them. If you are not confident about a specific fact, omit it rather than
-guessing.`;
+Provide an enriched executive recruiting briefing, tailored competitor insights, Boolean search optimizations, and candidate messaging hooks in valid JSON:
+1. Competitor Poaching Hooks: Identify 4 to 6 real competitor employers that employ this exact profile in this industry or geography, complete with specific poaching pitches, compensation angles, and organizational vulnerabilities.
+2. Custom Boolean Strings: Formulate 3 to 4 high-precision LinkedIn/X-Ray search queries designed specifically for this role and technical/domain stack.
+3. Geographic Context: Base this ONLY on ${input.geography.location} specifically — real companies with an actual presence there, real university or professional pipelines, and real nearby regional metros with approximate driving distance.
+4. Executive Brief: Deliver strategic narrative, key takeaways, and closing angles tailored directly to this role and industry.`;
 
       try {
         const responseText = await callGeminiWithResilience(ai, {

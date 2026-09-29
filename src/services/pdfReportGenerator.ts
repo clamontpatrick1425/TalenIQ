@@ -78,19 +78,19 @@ export function generateStakeholderReportPDF(
     }
   };
 
-  const renderRunningHeader = () => {
+  const renderRunningHeader = (sectionTitle?: string) => {
     doc.setFillColor(NAVY[0], NAVY[1], NAVY[2]);
     doc.rect(0, 0, pageWidth, 5, 'F');
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8);
+    doc.setFontSize(7.5);
     doc.setTextColor(SLATE[0], SLATE[1], SLATE[2]);
-    doc.text('TALENT INTELLIGENCE & HIRING CALIBRATION REPORT', margin, 10);
+    doc.text(sectionTitle || 'TALENT INTELLIGENCE & HIRING CALIBRATION REPORT', margin, 10);
     doc.setFont('helvetica', 'normal');
     doc.text(report.input.role.value, pageWidth - margin, 10, { align: 'right' });
     doc.setDrawColor(BORDER[0], BORDER[1], BORDER[2]);
     doc.setLineWidth(0.3);
     doc.line(margin, 12, pageWidth - margin, 12);
-    cursorY = 16;
+    cursorY = 17;
   };
 
   // ==========================================
@@ -353,263 +353,269 @@ export function generateStakeholderReportPDF(
   });
 
   // ==========================================
-  // PAGE 2: COMPENSATION & COMPETITOR MATRIX
+  // SECTION 2: COMPENSATION & COMPETITOR MATRIX
+  // ==========================================
+  const hasCompOrCompetitors = options.includeCompensation || options.includeCompetitors;
+
+  if (hasCompOrCompetitors) {
+    doc.addPage();
+    renderRunningHeader('COMPENSATION BENCHMARKS & COMPETITOR SOURCING');
+
+    if (options.includeCompensation) {
+      doc.setFillColor(BLUE[0], BLUE[1], BLUE[2]);
+      doc.rect(margin, cursorY, 3, 6, 'F');
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10.5);
+      doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]);
+      doc.text('COMPENSATION INTELLIGENCE & BENCHMARKS', margin + 5, cursorY + 4.8);
+      cursorY += 8;
+
+      const comp = report.compensationIntelligence;
+      const p25 = (comp.baseSalary.p25 || 165000).toLocaleString();
+      const p50 = (comp.baseSalary.p50 || 195000).toLocaleString();
+      const p75 = (comp.baseSalary.p75 || 235000).toLocaleString();
+      const p90 = (comp.baseSalary.p90 || 280000).toLocaleString();
+      const targetMin = (report.input.compensationTarget.min || 180000).toLocaleString();
+      const targetMax = (report.input.compensationTarget.max || 230000).toLocaleString();
+
+      autoTable(doc, {
+        startY: cursorY,
+        margin: { left: margin, right: margin },
+        head: [['Percentile Band', 'Base Salary (USD)', 'Market Context & Budget Assessment']],
+        body: [
+          ['25th Percentile (P25)', `$${p25}`, 'Lower quartile; non-tier-1 tech firms or transitioning titles'],
+          ['50th Percentile (P50 Median)', `$${p50}`, 'Market median for verified qualified talent in this geography'],
+          ['75th Percentile (P75)', `$${p75}`, 'Competitive bar; candidates with direct production scale expertise'],
+          ['90th Percentile (P90 Top Tier)', `$${p90}`, 'Tier-1 Big Tech compensation / scarce specialist premium'],
+          ['Target Hiring Range', `$${targetMin} - $${targetMax}`, `Alignment: ${comp.budgetAlignment || comp.marketPosition || 'At Market'}`],
+        ],
+        headStyles: {
+          fillColor: NAVY,
+          textColor: [255, 255, 255],
+          fontStyle: 'bold',
+          fontSize: 8,
+        },
+        bodyStyles: {
+          fontSize: 7.5,
+          textColor: NAVY,
+        },
+        alternateRowStyles: {
+          fillColor: LIGHT_BG,
+        },
+        theme: 'grid',
+      });
+
+      // @ts-ignore
+      cursorY = (doc as any).lastAutoTable.finalY + 9;
+    }
+
+    if (options.includeCompetitors) {
+      doc.setFillColor(ROSE[0], ROSE[1], ROSE[2]);
+      doc.rect(margin, cursorY, 3, 6, 'F');
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10.5);
+      doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]);
+      doc.text('COMPETITIVE EMPLOYER LANDSCAPE & POACHING HOOKS', margin + 5, cursorY + 4.8);
+      cursorY += 8;
+
+      const competitors = (report.competitiveEmployerLandscape || []).slice(0, 5);
+      const compRows = competitors.map((c) => [
+        c.tier || 'Tier 1',
+        c.name,
+        c.hiringActivity || 'Moderate',
+        c.geographicPresence || report.input.geography.location,
+        c.poachingAngle || 'Focus on direct ownership and streamlined technical RFC process',
+      ]);
+
+      autoTable(doc, {
+        startY: cursorY,
+        margin: { left: margin, right: margin },
+        head: [['Tier', 'Company Name', 'Hiring Pace', 'Presence', 'Actionable Poaching Pitch / Vulnerability']],
+        body: compRows.length > 0 ? compRows : [
+          ['Tier 1', 'Meta / Reality Labs', 'Cooling', 'Austin / Remote', 'Frustration with organizational re-orgs; pitch clear ownership'],
+          ['Tier 1', 'Amazon / AWS', 'Moderate', 'National Hubs', 'RTO mandate resistance; highlight full autonomy and modern stack'],
+          ['Tier 2', 'Databricks', 'High', 'Remote / SF', 'Pace and burn-out; pitch mission velocity with sane sustainable on-call'],
+          ['Tier 2', 'Stripe', 'Moderate', 'Hubs', 'Matrixed approvals; emphasize direct executive interface and speed'],
+        ],
+        headStyles: {
+          fillColor: NAVY,
+          textColor: [255, 255, 255],
+          fontStyle: 'bold',
+          fontSize: 8,
+        },
+        bodyStyles: {
+          fontSize: 7.2,
+          textColor: NAVY,
+        },
+        alternateRowStyles: {
+          fillColor: LIGHT_BG,
+        },
+        columnStyles: {
+          0: { cellWidth: 16 },
+          1: { cellWidth: 32, fontStyle: 'bold' },
+          2: { cellWidth: 22 },
+          3: { cellWidth: 28 },
+          4: { cellWidth: 'auto' },
+        },
+        theme: 'grid',
+      });
+
+      // @ts-ignore
+      cursorY = (doc as any).lastAutoTable.finalY + 8;
+    }
+  }
+
+  // ==========================================
+  // SECTION 3: HIRING CALIBRATION MATRIX & SCREENING
+  // ==========================================
+  const hasCalibrationOrScreenQuestions = options.includeCalibrationMatrix || options.includeScreenQuestions;
+
+  if (hasCalibrationOrScreenQuestions) {
+    doc.addPage();
+    renderRunningHeader('HIRING TEAM INTERVIEW CALIBRATION & SCREENING');
+
+    if (options.includeCalibrationMatrix) {
+      doc.setFillColor(INDIGO[0], INDIGO[1], INDIGO[2]);
+      doc.rect(margin, cursorY, 3, 6, 'F');
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10.5);
+      doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]);
+      doc.text('HIRING TEAM INTERVIEW CALIBRATION RUBRIC', margin + 5, cursorY + 4.8);
+      cursorY += 8;
+
+      const primarySkills = report.input.skills.required.value.slice(0, 3).join(', ') || 'core language/framework domain';
+
+      const rubricData = [
+        [
+          'Core Architecture & Code Craft\n(Weight: 30%)',
+          `Evaluates clean abstractions, memory safety, and domain mastery in ${primarySkills}.`,
+          '• Articulates latency vs memory trade-offs\n• Designs clean fault-tolerant modular boundaries\n• Solid understanding of consensus and stateful services',
+          '• Relies on framework magic without understanding runtime concurrency\n• Cannot diagnose network partition failure modes',
+        ],
+        [
+          'Distributed Scale & Production Triage\n(Weight: 25%)',
+          'Evaluates production resilience, telemetry (metrics/traces), capacity planning, and live triage.',
+          '• Concrete post-mortem stories with actionable remediation\n• Understands P99 latency tails, backpressure, rate-limiting\n• Proactively instrumented observability dashboards',
+          '• Considers reliability solely an "SRE/DevOps" problem\n• Struggles to explain cascading database lock contention',
+        ],
+        [
+          'Technical Leadership & RFC Clarity\n(Weight: 25%)',
+          'Evaluates cross-functional alignment, RFC drafting, pragmatic trade-offs, and peer mentorship.',
+          '• Translates ambiguous product goals into crisp technical roadmaps\n• Elevates peer engineering through rigorous code reviews\n• Fast resolution of technical deadlock',
+          '• Prefers isolated individual heroics over shared documentation\n• Dogmatically unwilling to make pragmatic timeline trade-offs',
+        ],
+        [
+          'High Agency & Startup Velocity\n(Weight: 20%)',
+          'Evaluates comfort with ambiguity, high bias for shipping, accountability, and customer empathy.',
+          '• Thrives with minimal oversight; defines own high bar\n• Fast feedback loops; direct customer impact orientation\n• High personal accountability for delivery outcomes',
+          '• Paralyzed without pre-defined tickets and bureaucratic approval\n• Disengages when project requirements evolve rapidly',
+        ],
+      ];
+
+      autoTable(doc, {
+        startY: cursorY,
+        margin: { left: margin, right: margin },
+        head: [['Evaluation Domain', 'Competency Scope', 'Strong Hire Signals (Green Flags)', 'Disqualifying Red Flags']],
+        body: rubricData,
+        headStyles: {
+          fillColor: NAVY,
+          textColor: [255, 255, 255],
+          fontStyle: 'bold',
+          fontSize: 7.5,
+        },
+        bodyStyles: {
+          fontSize: 6.8,
+          textColor: NAVY,
+        },
+        alternateRowStyles: {
+          fillColor: LIGHT_BG,
+        },
+        columnStyles: {
+          0: { cellWidth: 36, fontStyle: 'bold' },
+          1: { cellWidth: 42 },
+          2: { cellWidth: 54 },
+          3: { cellWidth: 50 },
+        },
+        theme: 'grid',
+      });
+
+      // @ts-ignore
+      cursorY = (doc as any).lastAutoTable.finalY + 8;
+    }
+
+    // High-Signal Screen Questions
+    if (options.includeScreenQuestions) {
+      doc.setFillColor(EMERALD[0], EMERALD[1], EMERALD[2]);
+      doc.rect(margin, cursorY, 3, 6, 'F');
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10.5);
+      doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]);
+      doc.text('HIGH-SIGNAL SCREENING QUESTIONS & EVALUATION GUIDE', margin + 5, cursorY + 4.8);
+      cursorY += 8;
+
+      const questionsData = [
+        [
+          'Q1: Complex Architecture Bottleneck',
+          `"Walk me through the most complex distributed system you designed using ${report.input.skills.required.value[0] || 'your core stack'}. What was the hardest bottleneck?"`,
+          'Listen for: deep intuition on serialization overhead, network I/O, database contention, and idempotency.\nProbe: "If traffic spiked 10x overnight, which subsystem fails first?"',
+        ],
+        [
+          'Q2: Production Outage Post-Mortem',
+          '"Describe a catastrophic outage or degradation you directly triaged. What was the root cause and long-term fix?"',
+          'Listen for: methodical root-cause debugging, calm incident commander behavior, and systemic regression testing.\nProbe: "How did you prevent identical regressions across adjacent services?"',
+        ],
+        [
+          'Q3: RFC Technical Alignment',
+          '"How do you drive consensus when 3 staff engineers have diametrically opposed views on data layer architecture?"',
+          'Listen for: data-driven benchmarking, customer-centric priority sorting, and crisp executive decision clarity.\nProbe: "When is it appropriate to disagree and commit versus escalating?"',
+        ],
+      ];
+
+      autoTable(doc, {
+        startY: cursorY,
+        margin: { left: margin, right: margin },
+        head: [['Question Category', 'Interview Question Prompt', 'Evaluation Criteria & Follow-Up Probes']],
+        body: questionsData,
+        headStyles: {
+          fillColor: NAVY,
+          textColor: [255, 255, 255],
+          fontStyle: 'bold',
+          fontSize: 7.5,
+        },
+        bodyStyles: {
+          fontSize: 7,
+          textColor: NAVY,
+        },
+        alternateRowStyles: {
+          fillColor: LIGHT_BG,
+        },
+        columnStyles: {
+          0: { cellWidth: 40, fontStyle: 'bold' },
+          1: { cellWidth: 65 },
+          2: { cellWidth: 'auto' },
+        },
+        theme: 'grid',
+      });
+
+      // @ts-ignore
+      cursorY = (doc as any).lastAutoTable.finalY + 8;
+    }
+  }
+
+  // ==========================================
+  // SECTION 4: GOVERNANCE, LEVELING, RISKS & STAKEHOLDER SIGN-OFF
+  // Always starts on its own dedicated closing page for pristine presentation
   // ==========================================
   doc.addPage();
-  renderRunningHeader();
-
-  if (options.includeCompensation) {
-    checkPageBreak(50);
-    doc.setFillColor(BLUE[0], BLUE[1], BLUE[2]);
-    doc.rect(margin, cursorY, 3, 6, 'F');
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(11);
-    doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]);
-    doc.text('COMPENSATION INTELLIGENCE & BENCHMARKS', margin + 5, cursorY + 5);
-    cursorY += 8;
-
-    const comp = report.compensationIntelligence;
-    const p25 = (comp.baseSalary.p25 || 165000).toLocaleString();
-    const p50 = (comp.baseSalary.p50 || 195000).toLocaleString();
-    const p75 = (comp.baseSalary.p75 || 235000).toLocaleString();
-    const p90 = (comp.baseSalary.p90 || 280000).toLocaleString();
-    const targetMin = (report.input.compensationTarget.min || 180000).toLocaleString();
-    const targetMax = (report.input.compensationTarget.max || 230000).toLocaleString();
-
-    autoTable(doc, {
-      startY: cursorY,
-      margin: { left: margin, right: margin },
-      head: [['Percentile Band', 'Base Salary (USD)', 'Market Context & Budget Assessment']],
-      body: [
-        ['25th Percentile (P25)', `$${p25}`, 'Lower quartile; non-tier-1 tech firms or transitioning titles'],
-        ['50th Percentile (P50 Median)', `$${p50}`, 'Market median for verified qualified talent in this geography'],
-        ['75th Percentile (P75)', `$${p75}`, 'Competitive bar; candidates with direct production scale expertise'],
-        ['90th Percentile (P90 Top Tier)', `$${p90}`, 'Tier-1 Big Tech compensation / scarce specialist premium'],
-        ['Target Hiring Range', `$${targetMin} - $${targetMax}`, `Alignment: ${comp.budgetAlignment || comp.marketPosition || 'At Market'}`],
-      ],
-      headStyles: {
-        fillColor: NAVY,
-        textColor: [255, 255, 255],
-        fontStyle: 'bold',
-        fontSize: 8,
-      },
-      bodyStyles: {
-        fontSize: 7.5,
-        textColor: NAVY,
-      },
-      alternateRowStyles: {
-        fillColor: LIGHT_BG,
-      },
-      theme: 'grid',
-    });
-
-    // @ts-ignore
-    cursorY = (doc as any).lastAutoTable.finalY + 8;
-  }
-
-  if (options.includeCompetitors) {
-    checkPageBreak(50);
-    doc.setFillColor(ROSE[0], ROSE[1], ROSE[2]);
-    doc.rect(margin, cursorY, 3, 6, 'F');
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(11);
-    doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]);
-    doc.text('COMPETITIVE EMPLOYER LANDSCAPE & POACHING HOOKS', margin + 5, cursorY + 5);
-    cursorY += 8;
-
-    const competitors = (report.competitiveEmployerLandscape || []).slice(0, 6);
-    const compRows = competitors.map((c) => [
-      c.tier || 'Tier 1',
-      c.name,
-      c.hiringActivity || 'Moderate',
-      c.geographicPresence || report.input.geography.location,
-      c.poachingAngle || 'Focus on direct ownership and streamlined technical RFC process',
-    ]);
-
-    autoTable(doc, {
-      startY: cursorY,
-      margin: { left: margin, right: margin },
-      head: [['Tier', 'Company Name', 'Hiring Pace', 'Presence', 'Actionable Poaching Pitch / Vulnerability']],
-      body: compRows.length > 0 ? compRows : [
-        ['Tier 1', 'Meta / Reality Labs', 'Cooling', 'Austin / Remote', 'Frustration with organizational re-orgs; pitch clear ownership'],
-        ['Tier 1', 'Amazon / AWS', 'Moderate', 'National Hubs', 'RTO mandate resistance; highlight full autonomy and modern stack'],
-        ['Tier 2', 'Databricks', 'High', 'Remote / SF', 'Pace and burn-out; pitch mission velocity with sane sustainable on-call'],
-        ['Tier 2', 'Stripe', 'Moderate', 'Hubs', 'Matrixed approvals; emphasize direct executive interface and speed'],
-      ],
-      headStyles: {
-        fillColor: NAVY,
-        textColor: [255, 255, 255],
-        fontStyle: 'bold',
-        fontSize: 8,
-      },
-      bodyStyles: {
-        fontSize: 7.2,
-        textColor: NAVY,
-      },
-      alternateRowStyles: {
-        fillColor: LIGHT_BG,
-      },
-      columnStyles: {
-        0: { cellWidth: 16 },
-        1: { cellWidth: 32, fontStyle: 'bold' },
-        2: { cellWidth: 22 },
-        3: { cellWidth: 28 },
-        4: { cellWidth: 'auto' },
-      },
-      theme: 'grid',
-    });
-
-    // @ts-ignore
-    cursorY = (doc as any).lastAutoTable.finalY + 8;
-  }
-
-  // ==========================================
-  // PAGE 3: HIRING CALIBRATION MATRIX (RUBRIC)
-  // ==========================================
-  doc.addPage();
-  renderRunningHeader();
-
-  if (options.includeCalibrationMatrix) {
-    checkPageBreak(50);
-    doc.setFillColor(INDIGO[0], INDIGO[1], INDIGO[2]);
-    doc.rect(margin, cursorY, 3, 6, 'F');
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(11);
-    doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]);
-    doc.text('HIRING TEAM INTERVIEW CALIBRATION RUBRIC', margin + 5, cursorY + 5);
-    cursorY += 8;
-
-    const primarySkills = report.input.skills.required.value.slice(0, 3).join(', ');
-
-    const rubricData = [
-      [
-        'Core Architecture & Code Craft\n(Weight: 30%)',
-        `Evaluates clean abstractions, memory safety, and domain mastery in ${primarySkills}.`,
-        '• Articulates latency vs memory trade-offs\n• Designs clean fault-tolerant modular boundaries\n• Solid understanding of consensus and stateful services',
-        '• Relies on framework magic without understanding runtime concurrency\n• Cannot diagnose network partition failure modes',
-      ],
-      [
-        'Distributed Scale & Production Triage\n(Weight: 25%)',
-        'Evaluates production resilience, telemetry (metrics/traces), capacity planning, and live triage.',
-        '• Concrete post-mortem stories with actionable remediation\n• Understands P99 latency tails, backpressure, rate-limiting\n• Proactively instrumented observability dashboards',
-        '• Considers reliability solely an "SRE/DevOps" problem\n• Struggles to explain cascading database lock contention',
-      ],
-      [
-        'Technical Leadership & RFC Clarity\n(Weight: 25%)',
-        'Evaluates cross-functional alignment, RFC drafting, pragmatic trade-offs, and peer mentorship.',
-        '• Translates ambiguous product goals into crisp technical roadmaps\n• Elevates peer engineering through rigorous code reviews\n• Fast resolution of technical deadlock',
-        '• Prefers isolated individual heroics over shared documentation\n• Dogmatically unwilling to make pragmatic timeline trade-offs',
-      ],
-      [
-        'High Agency & Startup Velocity\n(Weight: 20%)',
-        'Evaluates comfort with ambiguity, high bias for shipping, accountability, and customer empathy.',
-        '• Thrives with minimal oversight; defines own high bar\n• Fast feedback loops; direct customer impact orientation\n• High personal accountability for delivery outcomes',
-        '• Paralyzed without pre-defined tickets and bureaucratic approval\n• Disengages when project requirements evolve rapidly',
-      ],
-    ];
-
-    autoTable(doc, {
-      startY: cursorY,
-      margin: { left: margin, right: margin },
-      head: [['Evaluation Domain', 'Competency Scope', 'Strong Hire Signals (Green Flags)', 'Disqualifying Red Flags']],
-      body: rubricData,
-      headStyles: {
-        fillColor: NAVY,
-        textColor: [255, 255, 255],
-        fontStyle: 'bold',
-        fontSize: 7.5,
-      },
-      bodyStyles: {
-        fontSize: 6.8,
-        textColor: NAVY,
-      },
-      alternateRowStyles: {
-        fillColor: LIGHT_BG,
-      },
-      columnStyles: {
-        0: { cellWidth: 36, fontStyle: 'bold' },
-        1: { cellWidth: 42 },
-        2: { cellWidth: 54 },
-        3: { cellWidth: 50 },
-      },
-      theme: 'grid',
-    });
-
-    // @ts-ignore
-    cursorY = (doc as any).lastAutoTable.finalY + 8;
-  }
-
-  // High-Signal Screen Questions
-  if (options.includeScreenQuestions) {
-    checkPageBreak(50);
-    doc.setFillColor(EMERALD[0], EMERALD[1], EMERALD[2]);
-    doc.rect(margin, cursorY, 3, 6, 'F');
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(11);
-    doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]);
-    doc.text('HIGH-SIGNAL SCREENING QUESTIONS & EVALUATION GUIDE', margin + 5, cursorY + 5);
-    cursorY += 8;
-
-    const questionsData = [
-      [
-        'Q1: Complex Architecture Bottleneck',
-        `"Walk me through the most complex distributed system you designed using ${report.input.skills.required.value[0] || 'your core stack'}. What was the hardest bottleneck?"`,
-        'Listen for: deep intuition on serialization overhead, network I/O, database contention, and idempotency.\nProbe: "If traffic spiked 10x overnight, which subsystem fails first?"',
-      ],
-      [
-        'Q2: Production Outage Post-Mortem',
-        '"Describe a catastrophic outage or degradation you directly triaged. What was the root cause and long-term fix?"',
-        'Listen for: methodical root-cause debugging, calm incident commander behavior, and systemic regression testing.\nProbe: "How did you prevent identical regressions across adjacent services?"',
-      ],
-      [
-        'Q3: RFC Technical Alignment',
-        '"How do you drive consensus when 3 staff engineers have diametrically opposed views on data layer architecture?"',
-        'Listen for: data-driven benchmarking, customer-centric priority sorting, and crisp executive decision clarity.\nProbe: "When is it appropriate to disagree and commit versus escalating?"',
-      ],
-    ];
-
-    autoTable(doc, {
-      startY: cursorY,
-      margin: { left: margin, right: margin },
-      head: [['Question Category', 'Interview Question Prompt', 'Evaluation Criteria & Follow-Up Probes']],
-      body: questionsData,
-      headStyles: {
-        fillColor: NAVY,
-        textColor: [255, 255, 255],
-        fontStyle: 'bold',
-        fontSize: 7.5,
-      },
-      bodyStyles: {
-        fontSize: 7,
-        textColor: NAVY,
-      },
-      alternateRowStyles: {
-        fillColor: LIGHT_BG,
-      },
-      columnStyles: {
-        0: { cellWidth: 40, fontStyle: 'bold' },
-        1: { cellWidth: 65 },
-        2: { cellWidth: 'auto' },
-      },
-      theme: 'grid',
-    });
-
-    // @ts-ignore
-    cursorY = (doc as any).lastAutoTable.finalY + 8;
-  }
-
-  // ==========================================
-  // PAGE 4: RISKS, LEVELING & STAKEHOLDER SIGN-OFF
-  // ==========================================
-  checkPageBreak(90);
+  renderRunningHeader('GOVERNANCE, LEVELING & STAKEHOLDER SIGN-OFF');
 
   if (options.includeLeveling) {
     doc.setFillColor(SLATE[0], SLATE[1], SLATE[2]);
     doc.rect(margin, cursorY, 3, 6, 'F');
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(11);
+    doc.setFontSize(10.5);
     doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]);
-    doc.text('CORPORATE GRADE EQUIVALENCY & LEVELING MATRIX', margin + 5, cursorY + 5);
+    doc.text('CORPORATE GRADE EQUIVALENCY & LEVELING MATRIX', margin + 5, cursorY + 4.8);
     cursorY += 8;
 
     autoTable(doc, {
@@ -638,21 +644,23 @@ export function generateStakeholderReportPDF(
     cursorY = (doc as any).lastAutoTable.finalY + 8;
   }
 
-  if (options.includeRisks && report.risksAndConstraints?.risks?.length) {
-    checkPageBreak(50);
+  if (options.includeRisks) {
+    const rawRisks = report.risksAndConstraints?.risks?.slice(0, 3) || [];
+    const riskRows = rawRisks.length > 0
+      ? rawRisks.map((r) => [r.severity || 'High', r.risk, r.mitigationStrategy])
+      : [
+          ['High', 'Golden Handcuff Retention at Big Tech', 'Structure sign-on equity or performance bonuses to bridge initial vesting cliffs.'],
+          ['High', 'Work Model Resistance', 'Emphasize high-impact in-person collaboration and provide executive commuter flexibility.'],
+          ['High', 'Counter-Offer Frequency', 'Maintain continuous candidate engagement and close on cultural alignment and technical ownership.'],
+        ];
+
     doc.setFillColor(ROSE[0], ROSE[1], ROSE[2]);
     doc.rect(margin, cursorY, 3, 6, 'F');
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(11);
+    doc.setFontSize(10.5);
     doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]);
-    doc.text('KEY RECRUITING RISKS & MITIGATION PLAYBOOK', margin + 5, cursorY + 5);
+    doc.text('KEY RECRUITING RISKS & MITIGATION PLAYBOOK', margin + 5, cursorY + 4.8);
     cursorY += 8;
-
-    const riskRows = report.risksAndConstraints.risks.slice(0, 3).map((r) => [
-      r.severity || 'High',
-      r.risk,
-      r.mitigationStrategy,
-    ]);
 
     autoTable(doc, {
       startY: cursorY,
@@ -681,8 +689,9 @@ export function generateStakeholderReportPDF(
     cursorY = (doc as any).lastAutoTable.finalY + 8;
   }
 
-  if (options.includeClosingStrategy && report.executiveRecruitingBrief?.closingStrategy) {
-    checkPageBreak(30);
+  if (options.includeClosingStrategy) {
+    const closingText = report.executiveRecruitingBrief?.closingStrategy ||
+      'Sell the specific technical autonomy, direct access to executive decision-makers, and un-diluted equity upside.';
     doc.setFillColor(240, 253, 244); // light emerald
     doc.setDrawColor(187, 247, 208);
     doc.roundedRect(margin, cursorY, contentWidth, 18, 1.5, 1.5, 'FD');
@@ -693,8 +702,8 @@ export function generateStakeholderReportPDF(
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7.5);
     doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]);
-    const closeLines = doc.splitTextToSize(report.executiveRecruitingBrief.closingStrategy, contentWidth - 6);
-    doc.text(closeLines.slice(0, 3), margin + 3, cursorY + 9.5);
+    const closeLines = doc.splitTextToSize(closingText, contentWidth - 6);
+    doc.text(closeLines.slice(0, 2), margin + 3, cursorY + 9.5);
     cursorY += 22;
   }
 

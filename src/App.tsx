@@ -12,6 +12,7 @@ import { ExportCenterModal } from './components/ExportCenterModal';
 import { CandidateOutreachStudio } from './components/CandidateOutreachStudio';
 import { MarketInsightsView } from './components/MarketInsightsView';
 import { CandidateTracker } from './components/CandidateTracker';
+import { SourcingPlanView } from './components/SourcingPlanView';
 import { AutoSaveIndicator } from './components/AutoSaveIndicator';
 import {
   saveReportToStorage,
@@ -21,7 +22,6 @@ import {
   clearAllAutoSavedData,
 } from './services/storageService';
 import {
-  Compass,
   FileText,
   Activity,
   Search,
@@ -41,6 +41,8 @@ import {
   Terminal,
   TrendingUp,
   Users,
+  ClipboardList,
+  Target,
 } from 'lucide-react';
 
 type ActiveTab = 'intake' | 'dashboard' | 'insights' | 'report' | 'sourcing' | 'executive';
@@ -49,7 +51,7 @@ export default function App() {
   // Restore saved navigation or fallback to dashboard
   const savedNav = typeof window !== 'undefined' ? loadNavigationStateFromStorage() : null;
   const [activeTab, setActiveTab] = useState<ActiveTab>(savedNav?.activeTab || 'dashboard');
-  const [sourcingSubTab, setSourcingSubTab] = useState<'search' | 'tracker' | 'outreach'>(
+  const [sourcingSubTab, setSourcingSubTab] = useState<'search' | 'tracker' | 'outreach' | 'plan'>(
     savedNav?.sourcingSubTab || 'search'
   );
   const [isExportOpen, setIsExportOpen] = useState<boolean>(false);
@@ -198,25 +200,17 @@ export default function App() {
       <header className="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800/80 transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
           {/* Logo & Branding */}
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 accent-gradient rounded-xl glow flex items-center justify-center text-white shrink-0">
-              <Compass className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2.5">
-                <span className="text-xl font-bold tracking-tight text-white">
-                  TalentIQ
-                </span>
-                <span className="text-[10px] uppercase font-mono font-bold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 glow-subtle">
-                  23-Part Map Engine
-                </span>
-              </div>
-              <p className="text-xs text-slate-400 hidden sm:flex items-center gap-2 mt-0.5">
-                <span>Technical Talent Intelligence & Market Mapping System</span>
-                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 glow-dot-cyan"></span>
-                <span className="text-[11px] font-mono text-cyan-400/90">v2.5 Live</span>
-              </p>
-            </div>
+          <div className="flex items-center gap-2.5">
+            <span className="text-xl font-bold tracking-tight text-white">
+              TalentIQ
+            </span>
+            <span className="text-[10px] uppercase font-mono font-bold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 glow-subtle">
+              23-Part Map Engine
+            </span>
+            <span className="hidden sm:inline-flex items-center gap-1.5 text-[10px] font-mono text-cyan-400/90 bg-cyan-950/40 border border-cyan-800/40 px-2 py-0.5 rounded-full">
+              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 glow-dot-cyan"></span>
+              v2.5 Live
+            </span>
           </div>
 
           {/* Center Navigation Tabs */}
@@ -450,7 +444,7 @@ export default function App() {
               </div>
 
               {/* Sourcing Sub-tab Switcher */}
-              <div className="flex items-center gap-1.5 p-1 bg-slate-950/80 border border-slate-800 rounded-xl text-xs">
+              <div className="flex flex-wrap items-center gap-1.5 p-1 bg-slate-950/80 border border-slate-800 rounded-xl text-xs">
                 <button
                   id="btn-subtab-search"
                   onClick={() => setSourcingSubTab('search')}
@@ -487,8 +481,40 @@ export default function App() {
                   <Send className="w-3.5 h-3.5" />
                   <span>Outreach Studio</span>
                 </button>
+                <button
+                  id="btn-subtab-plan"
+                  onClick={() => setSourcingSubTab('plan')}
+                  className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
+                    sourcingSubTab === 'plan'
+                      ? 'accent-gradient text-white glow'
+                      : 'text-cyan-400 hover:text-white bg-cyan-950/30 border border-cyan-500/30'
+                  }`}
+                >
+                  <ClipboardList className="w-3.5 h-3.5" />
+                  <span>Recruiting Plan</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 glow-dot-cyan"></span>
+                </button>
               </div>
             </div>
+
+            {/* Quick Sourcing Plan Shortcut Banner */}
+            {sourcingSubTab !== 'plan' && (
+              <div className="p-3 bg-gradient-to-r from-indigo-950/50 via-cyan-950/40 to-slate-900/80 border border-cyan-500/30 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-md">
+                <div className="flex items-center gap-2.5 text-slate-300">
+                  <ClipboardList className="w-4 h-4 text-cyan-400 shrink-0" />
+                  <span>
+                    Need a complete execution plan? Generate and download the <strong className="text-white font-semibold">Detailed Sourcing & Recruiting Plan</strong> with calibrated funnel math, competitor poaching tiers, and weekly milestones.
+                  </span>
+                </div>
+                <button
+                  onClick={() => setSourcingSubTab('plan')}
+                  className="px-3.5 py-1.5 rounded-lg accent-gradient text-white text-xs font-bold font-mono transition-all flex items-center justify-center gap-1.5 cursor-pointer shrink-0 glow hover:scale-[1.02]"
+                >
+                  <span>Open Sourcing Plan (PDF / MD)</span>
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
 
             {sourcingSubTab === 'search' && (
               <SourcingSearchStation data={report.sourcingStrings} />
@@ -501,6 +527,13 @@ export default function App() {
             )}
             {sourcingSubTab === 'outreach' && (
               <CandidateOutreachStudio report={report} />
+            )}
+            {sourcingSubTab === 'plan' && (
+              <SourcingPlanView
+                report={report}
+                onNavigateToTracker={() => setSourcingSubTab('tracker')}
+                onNavigateToOutreach={() => setSourcingSubTab('outreach')}
+              />
             )}
           </div>
         )}
