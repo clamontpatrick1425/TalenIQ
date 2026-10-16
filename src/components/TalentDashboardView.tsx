@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { TalentMapReport, WorkModel } from '../types';
 import { ScoreGauge } from './ScoreGauge';
 import { ConfidenceBadge } from './ConfidenceBadge';
+import { MetricTooltip } from './MetricTooltip';
+import { HMBriefingExport } from './HMBriefingExport';
+import { FeatureGate } from './FeatureGate';
 import {
   Users,
   Award,
@@ -27,9 +30,18 @@ interface TalentDashboardViewProps {
   report: TalentMapReport;
   onUpdateWorkModel?: (model: WorkModel) => void;
   onNavigateToIntake?: () => void;
+  isProUser?: boolean;
+  onUpgradePro?: () => void;
+  onStartTrial?: () => void;
 }
 
-export const TalentDashboardView: React.FC<TalentDashboardViewProps> = ({ report, onNavigateToIntake }) => {
+export const TalentDashboardView: React.FC<TalentDashboardViewProps> = ({
+  report,
+  onNavigateToIntake,
+  isProUser = true,
+  onUpgradePro,
+  onStartTrial,
+}) => {
   // Interactive sensitivity simulator state
   const [simWorkModel, setSimWorkModel] = useState<WorkModel>(report.input.workModel.value);
   const [simRadiusDelta, setSimRadiusDelta] = useState<number>(0);
@@ -119,9 +131,12 @@ export const TalentDashboardView: React.FC<TalentDashboardViewProps> = ({ report
               5-Layer Technical Intelligence Engine
             </h3>
           </div>
-          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 glow-dot-emerald" />
-            <span className="text-xs text-emerald-300 font-mono font-medium">All 5 Intelligence Layers Operational</span>
+          <div className="flex flex-wrap items-center gap-2.5">
+            <HMBriefingExport report={report} />
+            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 glow-dot-emerald" />
+              <span className="text-xs text-emerald-300 font-mono font-medium">All 5 Intelligence Layers Operational</span>
+            </div>
           </div>
         </div>
 
@@ -248,7 +263,11 @@ export const TalentDashboardView: React.FC<TalentDashboardViewProps> = ({ report
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3.5">
           {/* Card 1: Addressable Talent */}
           <div className="glass-card rounded-2xl p-4 space-y-1">
-            <div className="text-[11px] text-slate-400 uppercase font-semibold font-mono">Addressable Talent</div>
+            <MetricTooltip
+              label="Addressable Talent"
+              explanation="Total talent headcount matching core job title, required technical skills, and target geography based on public profile indices and repository contributors."
+              className="text-[11px] text-slate-400 uppercase font-semibold font-mono"
+            />
             <div className="text-2xl font-bold font-mono text-white mt-1">
               {report.talentSupply.addressable.count.toLocaleString()}
             </div>
@@ -260,7 +279,11 @@ export const TalentDashboardView: React.FC<TalentDashboardViewProps> = ({ report
 
           {/* Card 2: Highly Qualified */}
           <div className="glass-card rounded-2xl p-4 space-y-1">
-            <div className="text-[11px] text-slate-400 uppercase font-semibold font-mono">Highly Qualified</div>
+            <MetricTooltip
+              label="Highly Qualified"
+              explanation="Subset possessing 5+ years of verified production-hardened systems experience, senior leadership tier, and domain architecture credentials."
+              className="text-[11px] text-slate-400 uppercase font-semibold font-mono"
+            />
             <div className="text-2xl font-bold font-mono text-emerald-400 mt-1">
               {report.talentSupply.highlyQualified.count.toLocaleString()}
             </div>
@@ -272,7 +295,11 @@ export const TalentDashboardView: React.FC<TalentDashboardViewProps> = ({ report
 
           {/* Card 3: Estimated Passive Talent */}
           <div className="glass-card rounded-2xl p-4 space-y-1">
-            <div className="text-[11px] text-slate-400 uppercase font-semibold font-mono">Estimated Passive Pool</div>
+            <MetricTooltip
+              label="Estimated Passive Pool"
+              explanation="High-performing engineers not currently active on job boards who require targeted technical messaging and competitive peer recruitment."
+              className="text-[11px] text-slate-400 uppercase font-semibold font-mono"
+            />
             <div className="text-2xl font-bold font-mono text-amber-400 mt-1">
               {report.talentSupply.passive.count.toLocaleString()}
             </div>
@@ -284,7 +311,11 @@ export const TalentDashboardView: React.FC<TalentDashboardViewProps> = ({ report
 
           {/* Card 4: Talent Availability */}
           <div className="glass-card rounded-2xl p-4 space-y-1">
-            <div className="text-[11px] text-slate-400 uppercase font-semibold font-mono">Talent Availability</div>
+            <MetricTooltip
+              label="Talent Availability"
+              explanation="Calibrated liquidity index (0-100) reflecting candidate movement rate, open requisitions per engineer, and regional hiring velocity."
+              className="text-[11px] text-slate-400 uppercase font-semibold font-mono"
+            />
             <div className="text-2xl font-bold font-mono text-cyan-400 mt-1">
               {report.talentAvailabilityScore.score}<span className="text-xs text-slate-500">/100</span>
             </div>
@@ -293,7 +324,11 @@ export const TalentDashboardView: React.FC<TalentDashboardViewProps> = ({ report
 
           {/* Card 5: Recruiting Difficulty */}
           <div className="glass-card rounded-2xl p-4 space-y-1">
-            <div className="text-[11px] text-slate-400 uppercase font-semibold font-mono">Recruiting Difficulty</div>
+            <MetricTooltip
+              label="Recruiting Difficulty"
+              explanation="Calculated based on active competitor job postings vs. estimated passive talent in this geo-fence and target compensation band."
+              className="text-[11px] text-slate-400 uppercase font-semibold font-mono"
+            />
             <div className="text-2xl font-bold font-mono text-rose-400 mt-1">
               {report.recruitingDifficultyScore.score}<span className="text-xs text-slate-500">/100</span>
             </div>
@@ -302,7 +337,11 @@ export const TalentDashboardView: React.FC<TalentDashboardViewProps> = ({ report
 
           {/* Card 6: Skill Scarcity */}
           <div className="glass-card rounded-2xl p-4 space-y-1">
-            <div className="text-[11px] text-slate-400 uppercase font-semibold font-mono">Skill Scarcity</div>
+            <MetricTooltip
+              label="Skill Scarcity"
+              explanation="Measures relative saturation of specialized technical competencies (e.g. low-latency systems, CUDA, distributed consensus) across the active talent market."
+              className="text-[11px] text-slate-400 uppercase font-semibold font-mono"
+            />
             <div className="text-xl font-bold font-mono text-indigo-400 mt-1">
               {report.skillsAnalysis.scarceSkills.length > 0 ? 'High / Critical' : 'Moderate'}
             </div>
@@ -313,7 +352,11 @@ export const TalentDashboardView: React.FC<TalentDashboardViewProps> = ({ report
 
           {/* Card 7: Geographic Concentration */}
           <div className="glass-card rounded-2xl p-4 space-y-1">
-            <div className="text-[11px] text-slate-400 uppercase font-semibold font-mono">Geographic Density</div>
+            <MetricTooltip
+              label="Geographic Density"
+              explanation="Spatial cluster density of qualified talent across primary metro corridors and regional feeder commuter zones."
+              className="text-[11px] text-slate-400 uppercase font-semibold font-mono"
+            />
             <div className="text-xl font-bold font-mono text-white mt-1">
               {report.geographicMarket.concentrationDensity}
             </div>
@@ -371,8 +414,21 @@ export const TalentDashboardView: React.FC<TalentDashboardViewProps> = ({ report
         </div>
       </div>
 
-      {/* 3. Interactive Scenario Sensitivity Simulator */}
-      <div className="glass-card rounded-2xl p-6 space-y-6">
+      {/* 3. Interactive Scenario Sensitivity Simulator (Pro Feature Gate) */}
+      <FeatureGate
+        isProUser={isProUser}
+        badgeText="Pro Feature"
+        headline="Unlock Advanced Market Simulations"
+        body="See exactly how adjusting work model, radius, or compensation alters your talent pool. Upgrade to Talent IQ Pro."
+        bullets={[
+          '✓ Unlimited Pivot Simulations',
+          '✓ Competitor Density Mapping',
+          '✓ HM Briefing Exports',
+        ]}
+        onUpgrade={onUpgradePro}
+        onStartTrial={onStartTrial}
+      >
+        <div className="glass-card rounded-2xl p-6 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
           <div>
             <h4 className="text-sm font-bold text-white flex items-center gap-2">
@@ -485,6 +541,7 @@ export const TalentDashboardView: React.FC<TalentDashboardViewProps> = ({ report
           </div>
         </div>
       </div>
+      </FeatureGate>
     </div>
   );
 };

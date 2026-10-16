@@ -7,6 +7,7 @@ import {
   generateSourcingPlanJSON,
 } from '../services/sourcingPlanGenerator';
 import { downloadSourcingPlanPDF } from '../services/sourcingPlanPdfGenerator';
+import { CopyableBoolean } from './CopyableBoolean';
 import {
   Download,
   FileText,
@@ -521,36 +522,15 @@ export const SourcingPlanView: React.FC<SourcingPlanViewProps> = ({
             </div>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-3">
             {plan.booleanArsenal.map((b, idx) => (
-              <div key={idx} className="glass-card rounded-2xl p-5 border-slate-800/90 space-y-3">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <span className="px-2.5 py-0.5 rounded-md bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-[10px] font-mono font-bold uppercase">
-                      {b.platform}
-                    </span>
-                    <h4 className="text-sm font-bold text-white">{b.name}</h4>
-                  </div>
-
-                  <button
-                    onClick={() => handleCopy(b.query, `bool-${idx}`)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-mono font-bold transition-all cursor-pointer w-fit"
-                  >
-                    {copiedKey === `bool-${idx}` ? (
-                      <Check className="w-3.5 h-3.5 text-emerald-400" />
-                    ) : (
-                      <Copy className="w-3.5 h-3.5" />
-                    )}
-                    <span>{copiedKey === `bool-${idx}` ? 'Copied!' : 'Copy Query'}</span>
-                  </button>
-                </div>
-
-                <p className="text-xs text-slate-400">{b.purpose}</p>
-
-                <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 font-mono text-xs text-cyan-300 leading-relaxed overflow-x-auto select-all">
-                  {b.query}
-                </div>
-              </div>
+              <CopyableBoolean
+                key={idx}
+                string={b.query}
+                label={b.name}
+                platform={b.platform}
+                description={b.purpose}
+              />
             ))}
           </div>
         </div>

@@ -1423,3 +1423,46 @@ export function generateSynthesizedTalentMap(
     }
   };
 }
+
+/**
+ * Returns the calibrated Demo Data Profile for first-time onboarding (Senior ML Engineer, Austin TX)
+ * exactly configured with Addressable Talent: 2,202 and Difficulty: 94/100.
+ */
+export function getDemoAustinMLReport(): TalentMapReport {
+  const presetText = `Job Title: Senior ML Engineer
+Location: Austin, TX (Hybrid - 3 days on-site)
+Department: Machine Learning Systems & Infrastructure
+Experience Level: Senior / Staff (6+ years experience)
+Target Salary: $195,000 - $250,000
+
+Responsibilities:
+- Build, optimize, and deploy low-latency distributed deep learning inference and training pipelines.
+- Profile and optimize CUDA kernels, PyTorch models, and high-throughput vector retrieval infrastructure.
+- Lead AI platform scalability, Kubernetes orchestration, and model quantization (vLLM, TensorRT-LLM).
+
+Requirements:
+- 6+ years production software engineering with 4+ years dedicated to PyTorch, CUDA, and distributed ML systems.
+- Production experience with high-scale vector stores (Milvus, Pinecone, Qdrant).
+- Strong systems fundamentals in C++ or Python.`;
+
+  const parsed = parseJDHeuristically(presetText, 'Senior_ML_Engineer_Austin.txt');
+  const baseReport = generateSynthesizedTalentMap(parsed, {
+    method: 'preset',
+    presetId: 'staff-ml-austin',
+    fileName: 'Senior_ML_Engineer_Austin.txt',
+  });
+
+  // Calibrate exact requested metrics
+  baseReport.talentSupply.addressable.count = 2202;
+  baseReport.talentSupply.highlyQualified.count = 572;
+  baseReport.talentSupply.passive.count = 372;
+  baseReport.talentSupply.totalPotential.count = 6120;
+  baseReport.recruitingDifficultyScore.score = 94;
+  baseReport.recruitingDifficultyScore.band = 'Extremely Difficult';
+  baseReport.recruitingDifficultyScore.expectedTimeToFillDays = 65;
+  baseReport.talentAvailabilityScore.score = 18;
+  baseReport.talentAvailabilityScore.band = 'Extremely Scarce';
+
+  return baseReport;
+}
+

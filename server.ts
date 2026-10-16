@@ -90,6 +90,63 @@ async function startServer() {
 
   app.use(express.json({ limit: '15mb' }));
 
+  // Enterprise Security & Anti-Cloning HTTP Headers
+  app.use((req, res, next) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-XSS-Protection', '1; mode=block');
+    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    res.setHeader('X-Robots-Tag', 'noarchive, noimageindex');
+    next();
+  });
+
+  // Anti-Cloning & Malicious Web-Downloader Bot Shield
+  const CLONER_BOT_PATTERNS = [
+    /httrack/i,
+    /teleport\s?pro/i,
+    /webcopy/i,
+    /webcollector/i,
+    /sitecopy/i,
+    /offline\s?explorer/i,
+    /page-mirror/i,
+    /screaming\s?frog/i,
+    /site-clone/i,
+    /rip\s?site/i,
+  ];
+
+  app.use((req, res, next) => {
+    // Exclude health check from bot shield
+    if (req.path === '/api/health') return next();
+
+    const userAgent = req.headers['user-agent'] || '';
+    const isClonerBot = CLONER_BOT_PATTERNS.some((pattern) => pattern.test(userAgent));
+    if (isClonerBot) {
+      return res.status(403).json({
+        error: 'Access Denied: Automated site duplication, cloning, and unauthorized scraping are strictly prohibited.',
+        code: 'SECURITY_VIOLATION_CLONE_DETECTED',
+      });
+    }
+    next();
+  });
+
+  // Robots.txt to instruct crawlers and archiving tools
+  app.get('/robots.txt', (req, res) => {
+    res.type('text/plain');
+    res.send(`User-agent: *
+Disallow: /api/
+Disallow: /assets/
+Noarchive: /
+
+User-agent: HTTrack
+Disallow: /
+
+User-agent: WebCopy
+Disallow: /
+
+User-agent: TeleportPro
+Disallow: /
+`);
+  });
+
   // Lazy initialize Gemini AI client
   let aiClient: GoogleGenAI | null = null;
   function getGenAI(): GoogleGenAI | null {

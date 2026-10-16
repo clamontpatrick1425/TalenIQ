@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { CandidateSearchStrategyData } from '../types';
+import { CopyableBoolean } from './CopyableBoolean';
 import {
   Search,
   Copy,
@@ -409,43 +410,15 @@ export const SourcingSearchStation: React.FC<SourcingSearchStationProps> = ({ da
         </div>
 
         <div className="space-y-3">
-          {linkedinBoolean.map((b, i) => {
-            const key = `li-${i}`;
-            return (
-              <div key={i} className="p-4 bg-slate-950/70 rounded-xl border border-slate-800 space-y-2.5">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h5 className="font-bold text-xs text-white">
-                      {b.name}
-                    </h5>
-                    <p className="text-[11px] text-slate-400">{b.purpose}</p>
-                  </div>
-
-                  <button
-                    id={`btn-copy-${key}`}
-                    onClick={() => handleCopy(key, b.query)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/40 text-indigo-200 rounded-lg text-xs font-semibold transition-all cursor-pointer"
-                  >
-                    {copiedKey === key ? (
-                      <>
-                        <Check className="w-3.5 h-3.5 text-emerald-400" />
-                        <span className="text-emerald-400 font-mono">Copied!</span>
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="w-3.5 h-3.5" />
-                        <span>Copy String</span>
-                      </>
-                    )}
-                  </button>
-                </div>
-
-                <div className="p-3 bg-slate-900/90 text-cyan-200 border border-slate-800/80 font-mono text-xs rounded-xl overflow-x-auto select-all leading-relaxed shadow-inner">
-                  {b.query}
-                </div>
-              </div>
-            );
-          })}
+          {linkedinBoolean.map((b, i) => (
+            <CopyableBoolean
+              key={i}
+              string={b.query}
+              label={b.name}
+              platform="LinkedIn ATS"
+              description={b.purpose}
+            />
+          ))}
         </div>
       </div>
 
@@ -457,59 +430,15 @@ export const SourcingSearchStation: React.FC<SourcingSearchStationProps> = ({ da
         </div>
 
         <div className="space-y-3">
-          {googleXray.map((x, i) => {
-            const key = `xray-${i}`;
-            const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(x.query)}`;
-
-            return (
-              <div key={i} className="p-4 bg-slate-950/70 rounded-xl border border-slate-800 space-y-2.5">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h5 className="font-bold text-xs text-white">
-                      {x.name}
-                    </h5>
-                    <span className="text-[10px] uppercase font-mono font-bold text-emerald-300 bg-emerald-500/20 px-2 py-0.5 rounded-full border border-emerald-500/40">
-                      Target: {x.platform}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <a
-                      href={googleSearchUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-cyan-300 rounded-lg text-xs font-semibold transition-all border border-slate-700"
-                    >
-                      <ExternalLink className="w-3.5 h-3.5" />
-                      <span>Search on Google</span>
-                    </a>
-
-                    <button
-                      id={`btn-copy-${key}`}
-                      onClick={() => handleCopy(key, x.query)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-200 rounded-lg text-xs font-semibold transition-all cursor-pointer"
-                    >
-                      {copiedKey === key ? (
-                        <>
-                          <Check className="w-3.5 h-3.5 text-emerald-400" />
-                          <span className="text-emerald-400 font-mono">Copied!</span>
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="w-3.5 h-3.5" />
-                          <span>Copy</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </div>
-
-                <div className="p-3 bg-slate-900/90 text-emerald-200 border border-slate-800/80 font-mono text-xs rounded-xl overflow-x-auto select-all leading-relaxed shadow-inner">
-                  {x.query}
-                </div>
-              </div>
-            );
-          })}
+          {googleXray.map((x, i) => (
+            <CopyableBoolean
+              key={i}
+              string={x.query}
+              label={x.name}
+              platform={x.platform}
+              searchUrl={`https://www.google.com/search?q=${encodeURIComponent(x.query)}`}
+            />
+          ))}
         </div>
       </div>
 

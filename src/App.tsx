@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { TalentMapInput, TalentMapReport, JDSourceInfo } from './types';
 import { SAMPLE_JD_PRESETS } from './data/sampleJDs';
-import { generateSynthesizedTalentMap, parseJDHeuristically } from './services/talentIntelligenceEngine';
+import { generateSynthesizedTalentMap, parseJDHeuristically, getDemoAustinMLReport } from './services/talentIntelligenceEngine';
 import { IntakeView } from './components/IntakeView';
 import { TalentDashboardView } from './components/TalentDashboardView';
+import { EmptyStateDashboard } from './components/EmptyStateDashboard';
 import { ReportSectionsView } from './components/ReportSectionsView';
 import { ExecutiveBriefView } from './components/ExecutiveBriefView';
 import { SourcingSearchStation } from './components/SourcingSearchStation';
@@ -15,6 +16,7 @@ import { CandidateTracker } from './components/CandidateTracker';
 import { SourcingPlanView } from './components/SourcingPlanView';
 import { AutoSaveIndicator } from './components/AutoSaveIndicator';
 import { LegalModal, LegalDocType } from './components/LegalModal';
+import { SecurityShieldToast } from './components/SecurityShieldToast';
 import {
   saveReportToStorage,
   loadReportFromStorage,
@@ -46,6 +48,7 @@ import {
   Users,
   ClipboardList,
   Target,
+  Zap,
 } from 'lucide-react';
 
 type ActiveTab = 'intake' | 'dashboard' | 'insights' | 'report' | 'sourcing' | 'executive';
@@ -62,24 +65,53 @@ export default function App() {
   const [legalModalOpen, setLegalModalOpen] = useState<boolean>(false);
   const [legalDocType, setLegalDocType] = useState<LegalDocType>('privacy');
 
-  // Restore saved report from localStorage or generate from default preset
+  // Track whether user has activated (uploaded a JD or explored the demo profile)
+  const [hasActivated, setHasActivated] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = loadReportFromStorage();
+      const activatedFlag = localStorage.getItem('talentiq_activated');
+      if (activatedFlag === 'true' && saved && saved.id) {
+        return true;
+      }
+    }
+    return false;
+  });
+
+  // Restore saved report from localStorage or generate from default Austin ML preset
   const [report, setReport] = useState<TalentMapReport | null>(() => {
     const saved = loadReportFromStorage();
     if (saved && saved.id) {
       return saved;
     }
     try {
-      const defaultPreset = SAMPLE_JD_PRESETS[0];
-      const parsed = parseJDHeuristically(defaultPreset.jdText, `${defaultPreset.title}.txt`);
-      return generateSynthesizedTalentMap(parsed, {
-        method: 'preset',
-        presetId: defaultPreset.id,
-        fileName: `${defaultPreset.title}.txt`,
-      });
+      return getDemoAustinMLReport();
     } catch {
       return null;
     }
   });
+
+  // Subscription tier state (Free Tier vs Pro Tier)
+  const [isProUser, setIsProUser] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const savedPro = localStorage.getItem('talentiq_pro_plan');
+      if (savedPro === 'true') return true;
+    }
+    return false; // Default to free tier to display soft paywall value
+  });
+
+  const handleUpgradeToPro = () => {
+    setIsProUser(true);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('talentiq_pro_plan', 'true');
+    }
+  };
+
+  const handleStartTrial = () => {
+    setIsProUser(true);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('talentiq_pro_plan', 'true');
+    }
+  };
 
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [isCopilotOpen, setIsCopilotOpen] = useState<boolean>(false);
@@ -159,16 +191,24 @@ export default function App() {
     setTimeout(() => setIsAutoSaving(false), 400);
   };
 
+  const handleLoadDemoProfile = () => {
+    const demo = getDemoAustinMLReport();
+    setReport(demo);
+    setHasActivated(true);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('talentiq_activated', 'true');
+    }
+    saveReportToStorage(demo);
+  };
+
   const handleResetWorkspace = () => {
     clearAllAutoSavedData();
-    const defaultPreset = SAMPLE_JD_PRESETS[0];
-    const parsed = parseJDHeuristically(defaultPreset.jdText, `${defaultPreset.title}.txt`);
-    const fallbackReport = generateSynthesizedTalentMap(parsed, {
-      method: 'preset',
-      presetId: defaultPreset.id,
-      fileName: `${defaultPreset.title}.txt`,
-    });
-    setReport(fallbackReport);
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('talentiq_activated');
+    }
+    const demo = getDemoAustinMLReport();
+    setReport(demo);
+    setHasActivated(false);
     setActiveTab('dashboard');
     setSourcingSubTab('search');
   };
@@ -185,6 +225,10 @@ export default function App() {
       const data = await response.json();
       if (data.success && data.report) {
         setReport(data.report);
+        setHasActivated(true);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('talentiq_activated', 'true');
+        }
         saveReportToStorage(data.report);
         setActiveTab('dashboard');
         return;
@@ -198,6 +242,10 @@ export default function App() {
     // Local synthesis fallback ensures zero downtime
     const fallbackReport = generateSynthesizedTalentMap(input, source);
     setReport(fallbackReport);
+    setHasActivated(true);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('talentiq_activated', 'true');
+    }
     saveReportToStorage(fallbackReport);
     setActiveTab('dashboard');
   };
@@ -301,6 +349,40 @@ export default function App() {
 
           {/* Right Action Tools */}
           <div className="flex items-center gap-2.5">
+            {/* Subscription Tier Switcher (Free vs Pro) */}
+            <button
+              type="button"
+              id="btn-toggle-pro-tier"
+              onClick={() => {
+                const next = !isProUser;
+                setIsProUser(next);
+                if (typeof window !== 'undefined') {
+                  localStorage.setItem('talentiq_pro_plan', String(next));
+                }
+              }}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer shadow-sm ${
+                isProUser
+                  ? 'bg-gradient-to-r from-amber-500/20 to-indigo-500/20 text-amber-300 border border-amber-500/40 glow-dot-amber'
+                  : 'bg-slate-950/80 border border-slate-800 text-slate-300 hover:text-white hover:border-slate-700'
+              }`}
+              title="Click to toggle between Free Tier and Pro Tier"
+            >
+              <Zap className={`w-3.5 h-3.5 ${isProUser ? 'text-amber-400' : 'text-slate-400'}`} />
+              <span>{isProUser ? 'Pro Tier Active' : 'Free Tier (Upgrade)'}</span>
+            </button>
+
+            {hasActivated && (
+              <button
+                type="button"
+                onClick={() => setHasActivated(false)}
+                title="Preview the initial first-time onboarding empty state"
+                className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono font-medium text-slate-400 hover:text-cyan-300 bg-slate-950/70 border border-slate-800 hover:border-cyan-500/40 transition-all cursor-pointer"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+                <span>Demo State</span>
+              </button>
+            )}
+
             {/* LocalStorage AutoSave Engine Indicator */}
             <AutoSaveIndicator
               onManualSave={handleManualSave}
@@ -439,10 +521,34 @@ export default function App() {
         )}
 
         {activeTab === 'dashboard' && report && (
-          <TalentDashboardView
-            report={report}
-            onNavigateToIntake={() => setActiveTab('intake')}
-          />
+          <div className="relative">
+            {/* First-Time Onboarding / Empty State Overlay */}
+            {!hasActivated && (
+              <div className="absolute inset-0 z-30 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs rounded-3xl min-h-[580px]">
+                <EmptyStateDashboard
+                  onUploadFirstJD={() => setActiveTab('intake')}
+                  onExploreDemoProfile={handleLoadDemoProfile}
+                />
+              </div>
+            )}
+
+            {/* Background Dashboard (Blurred & Dimmed until activated) */}
+            <div
+              className={`transition-all duration-300 ${
+                !hasActivated
+                  ? 'filter blur-[3.5px] opacity-40 pointer-events-none select-none'
+                  : ''
+              }`}
+            >
+              <TalentDashboardView
+                report={report}
+                onNavigateToIntake={() => setActiveTab('intake')}
+                isProUser={isProUser}
+                onUpgradePro={handleUpgradeToPro}
+                onStartTrial={handleStartTrial}
+              />
+            </div>
+          </div>
         )}
 
         {activeTab === 'insights' && report && (
@@ -591,6 +697,9 @@ export default function App() {
         onClose={() => setLegalModalOpen(false)}
       />
 
+      {/* Real-time Anti-Cloning & Code Theft Security Toast */}
+      <SecurityShieldToast />
+
       {/* Sleek Status Footer */}
       <footer className="mt-auto border-t border-slate-800/80 bg-slate-900/90 py-5 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs">
@@ -636,6 +745,15 @@ export default function App() {
           </div>
 
           <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-[11px] font-mono uppercase tracking-wider text-slate-400">
+            {/* Anti-Cloning Shield Indicator */}
+            <div
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-mono font-semibold"
+              title="Anti-Cloning & IP Scraper Shield Active: Rate limiting, bot defenses, and code protection enabled"
+            >
+              <ShieldCheck className="w-3 h-3 text-emerald-400" />
+              <span>Anti-Cloning Shield: ACTIVE</span>
+            </div>
+
             <div className="flex items-center gap-2">
               <span className="text-slate-500">Instance:</span>
               <span className="text-indigo-300 font-bold">US-EAST-1</span>

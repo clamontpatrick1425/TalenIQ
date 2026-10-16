@@ -5,6 +5,7 @@ import { extractTextFromFile } from '../services/documentParser';
 import { saveIntakeDraftToStorage, loadIntakeDraftFromStorage } from '../services/storageService';
 import { ConfidenceBadge } from './ConfidenceBadge';
 import { SAMPLE_JD_PRESETS, SampleJDPreset } from '../data/sampleJDs';
+import { InclusiveLanguageChecker } from './InclusiveLanguageChecker';
 import {
   Upload,
   FileText,
@@ -432,6 +433,12 @@ export const IntakeView: React.FC<IntakeViewProps> = ({ onGenerateReport, isGene
               onChange={(e) => setRawText(e.target.value)}
               placeholder="Paste complete job description, hiring requirements, or upload a Word document / PDF above..."
               className="w-full p-4 text-xs font-mono bg-slate-950/80 border border-slate-800 rounded-xl focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 focus:outline-hidden text-slate-100 placeholder-slate-600 leading-relaxed shadow-inner"
+            />
+
+            {/* D&I Inclusive Language Scanner (Layer 01) */}
+            <InclusiveLanguageChecker
+              jdText={rawText}
+              onApplyFixes={(updatedText) => setRawText(updatedText)}
             />
           </div>
 
