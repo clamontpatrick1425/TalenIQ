@@ -6,6 +6,7 @@ import { saveIntakeDraftToStorage, loadIntakeDraftFromStorage } from '../service
 import { ConfidenceBadge } from './ConfidenceBadge';
 import { SAMPLE_JD_PRESETS, SampleJDPreset } from '../data/sampleJDs';
 import { InclusiveLanguageChecker } from './InclusiveLanguageChecker';
+import { JDDropzone } from './JDDropzone';
 import {
   Upload,
   FileText,
@@ -322,95 +323,15 @@ export const IntakeView: React.FC<IntakeViewProps> = ({ onGenerateReport, isGene
             </div>
           </div>
 
-          {/* Primary Drop Zone */}
-          <div
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-            className={`glass-card rounded-2xl p-8 border-2 border-dashed text-center space-y-4 transition-all relative overflow-hidden ${
-              isDragging
-                ? 'border-cyan-400 bg-cyan-500/10 scale-[1.01] shadow-[0_0_30px_rgba(6,182,212,0.2)]'
-                : 'border-slate-700/80 hover:border-cyan-500/50 bg-slate-950/40'
-            }`}
-          >
-            <div className="w-16 h-16 mx-auto rounded-2xl accent-gradient glow flex items-center justify-center text-white shadow-lg">
-              {isExtractingFile ? (
-                <Loader2 className="w-8 h-8 animate-spin" />
-              ) : (
-                <Upload className="w-8 h-8" />
-              )}
-            </div>
-
-            <div>
-              <h3 className="text-lg font-bold text-white">
-                Upload Any Job Description Document
-              </h3>
-              <p className="text-xs text-slate-300 mt-1.5 max-w-lg mx-auto leading-relaxed">
-                Drag and drop your hiring specification document or browse from your computer. Supports{' '}
-                <span className="text-cyan-300 font-mono font-semibold">PDF</span>,{' '}
-                <span className="text-cyan-300 font-mono font-semibold">Word (.docx, .doc)</span>,{' '}
-                <span className="text-cyan-300 font-mono font-semibold">RTF</span>, and{' '}
-                <span className="text-cyan-300 font-mono font-semibold">Plain Text (.txt, .md)</span>.
-              </p>
-            </div>
-
-            {/* Action Buttons in Drop Zone */}
-            <div className="flex flex-wrap items-center justify-center gap-3 pt-1">
-              <label
-                htmlFor="jd-file-input"
-                className="px-6 py-3 accent-gradient accent-gradient-hover text-white rounded-full text-xs font-bold cursor-pointer transition-all glow hover:shadow-[0_0_25px_rgba(6,182,212,0.4)] flex items-center gap-2"
-              >
-                {isExtractingFile ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin text-white" />
-                    <span>Parsing Document...</span>
-                  </>
-                ) : (
-                  <>
-                    <FileText className="w-4 h-4" />
-                    <span>Browse & Upload File</span>
-                  </>
-                )}
-                <input
-                  id="jd-file-input"
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".txt,.pdf,.doc,.docx,.rtf,.md,.markdown"
-                  onChange={handleFileUpload}
-                  disabled={isExtractingFile}
-                  className="hidden"
-                />
-              </label>
-
-              {fileName && (
-                <div className="flex items-center gap-2 bg-slate-900 border border-cyan-500/40 px-3.5 py-2 rounded-xl text-xs text-cyan-300 font-mono">
-                  <FileCheck className="w-4 h-4 text-cyan-400 shrink-0" />
-                  <span className="truncate max-w-[200px]">{fileName}</span>
-                  {fileSize && <span className="text-slate-500 text-[10px]">({fileSize})</span>}
-                  <button
-                    type="button"
-                    onClick={handleClearFile}
-                    title="Remove file"
-                    className="p-1 hover:text-rose-400 text-slate-400 transition-colors ml-1 cursor-pointer"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* Extraction status banner */}
-            {fileExtractStatus && (
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-slate-900/90 border border-cyan-500/30 rounded-xl text-xs font-mono text-cyan-300">
-                {isExtractingFile ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin text-cyan-400" />
-                ) : (
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                )}
-                <span>{fileExtractStatus}</span>
-              </div>
-            )}
-          </div>
+          {/* Enhanced Drag-and-Drop JD Intake Dropzone */}
+          <JDDropzone
+            onFileSelected={processUploadedFile}
+            onClearFile={handleClearFile}
+            selectedFileName={fileName}
+            selectedFileSize={fileSize}
+            isExtracting={isExtractingFile}
+            extractStatus={fileExtractStatus}
+          />
 
           {/* Paste / Edit Raw JD Text Area */}
           <div className="space-y-2">

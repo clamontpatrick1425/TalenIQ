@@ -84,9 +84,16 @@ async function callGeminiWithResilience(
 
 async function startServer() {
   const app = express();
-  // In Cloud Run production, Cloud Run specifies process.env.PORT (e.g. 8080).
-  // If occupied (e.g., local dev Nginx reverse proxy), it gracefully falls back to port 3000.
-  const targetPort = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
+  // The app dev server MUST bind to port 3000 in this container environment,
+  // as Nginx (on port 8080) and Control Plane API proxy incoming traffic directly to port 3000.
+  let targetPort = 3000;
+  const portArgIdx = process.argv.indexOf('--port');
+  if (portArgIdx !== -1 && process.argv[portArgIdx + 1]) {
+    const parsed = parseInt(process.argv[portArgIdx + 1], 10);
+    if (!isNaN(parsed) && parsed > 0 && parsed !== 8080) {
+      targetPort = parsed;
+    }
+  }
 
   app.use(express.json({ limit: '15mb' }));
 

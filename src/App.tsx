@@ -16,7 +16,7 @@ import { CandidateTracker } from './components/CandidateTracker';
 import { SourcingPlanView } from './components/SourcingPlanView';
 import { AutoSaveIndicator } from './components/AutoSaveIndicator';
 import { LegalModal, LegalDocType } from './components/LegalModal';
-import { SecurityShieldToast } from './components/SecurityShieldToast';
+import { RequestDemoCTA } from './components/RequestDemoCTA';
 import {
   saveReportToStorage,
   loadReportFromStorage,
@@ -349,6 +349,9 @@ export default function App() {
 
           {/* Right Action Tools */}
           <div className="flex items-center gap-2.5">
+            {/* Prominent High-Contrast Request a Demo CTA */}
+            <RequestDemoCTA variant="header" />
+
             {/* Subscription Tier Switcher (Free vs Pro) */}
             <button
               type="button"
@@ -670,6 +673,11 @@ export default function App() {
         {activeTab === 'executive' && report && (
           <ExecutiveBriefView report={report} />
         )}
+
+        {/* Executive Conversion Banner */}
+        <div className="mt-12">
+          <RequestDemoCTA variant="banner" label="Schedule Executive Walkthrough" />
+        </div>
       </main>
 
       {/* Persistent AI Recruiter Copilot Floating Trigger */}
@@ -697,75 +705,47 @@ export default function App() {
         onClose={() => setLegalModalOpen(false)}
       />
 
-      {/* Real-time Anti-Cloning & Code Theft Security Toast */}
-      <SecurityShieldToast />
-
-      {/* Sleek Status Footer */}
+      {/* Sleek Enterprise Footer */}
       <footer className="mt-auto border-t border-slate-800/80 bg-slate-900/90 py-5 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs">
-          <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-slate-400 font-medium">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
+          <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-slate-400 font-medium">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-indigo-400 glow-dot"></span>
               <span className="text-white font-semibold">TalentIQ Enterprise</span>
             </div>
             <span className="text-slate-600 hidden sm:inline">•</span>
-            <span className="hidden sm:inline">Executive Market Intelligence Platform</span>
-
-            {/* Legal Tabs & Disclosures */}
-            <span className="text-slate-600 hidden md:inline">•</span>
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                id="footer-tab-privacy-policy"
-                onClick={() => {
-                  setLegalDocType('privacy');
-                  setLegalModalOpen(true);
-                }}
-                className="text-slate-400 hover:text-indigo-300 transition-colors flex items-center gap-1.5 cursor-pointer hover:underline text-xs"
-                title="View Comprehensive Privacy Policy & GDPR/CCPA Data Protection"
-              >
-                <ShieldCheck className="w-3.5 h-3.5 text-indigo-400" />
-                <span>Privacy Policy</span>
-              </button>
-              <span className="text-slate-700">|</span>
-              <button
-                type="button"
-                id="footer-tab-terms-conditions"
-                onClick={() => {
-                  setLegalDocType('terms');
-                  setLegalModalOpen(true);
-                }}
-                className="text-slate-400 hover:text-indigo-300 transition-colors flex items-center gap-1.5 cursor-pointer hover:underline text-xs"
-                title="View SaaS Terms & Conditions of Service"
-              >
-                <FileText className="w-3.5 h-3.5 text-indigo-400" />
-                <span>Terms &amp; Conditions</span>
-              </button>
-            </div>
+            <span className="text-slate-400">Executive Market Intelligence Platform</span>
           </div>
 
-          <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-[11px] font-mono uppercase tracking-wider text-slate-400">
-            {/* Anti-Cloning Shield Indicator */}
-            <div
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-mono font-semibold"
-              title="Anti-Cloning & IP Scraper Shield Active: Rate limiting, bot defenses, and code protection enabled"
+          {/* Legal Tabs & Disclosures */}
+          <div className="flex items-center gap-3 text-xs">
+            <button
+              type="button"
+              id="footer-tab-privacy-policy"
+              onClick={() => {
+                setLegalDocType('privacy');
+                setLegalModalOpen(true);
+              }}
+              className="text-slate-400 hover:text-indigo-300 transition-colors flex items-center gap-1.5 cursor-pointer hover:underline"
+              title="View Comprehensive Privacy Policy & GDPR/CCPA Data Protection"
             >
-              <ShieldCheck className="w-3 h-3 text-emerald-400" />
-              <span>Anti-Cloning Shield: ACTIVE</span>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <span className="text-slate-500">Instance:</span>
-              <span className="text-indigo-300 font-bold">US-EAST-1</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-slate-500">Latency:</span>
-              <span className="text-cyan-400 font-bold">14ms</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 glow-dot-emerald"></span>
-              <span className="text-emerald-400 font-bold">Model Ready</span>
-            </div>
+              <ShieldCheck className="w-3.5 h-3.5 text-indigo-400" />
+              <span>Privacy Policy</span>
+            </button>
+            <span className="text-slate-700">|</span>
+            <button
+              type="button"
+              id="footer-tab-terms-conditions"
+              onClick={() => {
+                setLegalDocType('terms');
+                setLegalModalOpen(true);
+              }}
+              className="text-slate-400 hover:text-indigo-300 transition-colors flex items-center gap-1.5 cursor-pointer hover:underline"
+              title="View SaaS Terms & Conditions of Service"
+            >
+              <FileText className="w-3.5 h-3.5 text-indigo-400" />
+              <span>Terms &amp; Conditions</span>
+            </button>
           </div>
         </div>
       </footer>

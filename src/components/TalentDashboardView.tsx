@@ -5,6 +5,9 @@ import { ConfidenceBadge } from './ConfidenceBadge';
 import { MetricTooltip } from './MetricTooltip';
 import { HMBriefingExport } from './HMBriefingExport';
 import { FeatureGate } from './FeatureGate';
+import { MetricCard } from './MetricCard';
+import { PivotSimulator } from './PivotSimulator';
+import { Tooltip, METHODOLOGY_EXPLANATIONS } from './Tooltip';
 import {
   Users,
   Award,
@@ -42,43 +45,6 @@ export const TalentDashboardView: React.FC<TalentDashboardViewProps> = ({
   onUpgradePro,
   onStartTrial,
 }) => {
-  // Interactive sensitivity simulator state
-  const [simWorkModel, setSimWorkModel] = useState<WorkModel>(report.input.workModel.value);
-  const [simRadiusDelta, setSimRadiusDelta] = useState<number>(0);
-  const [simCompDelta, setSimCompDelta] = useState<number>(0);
-
-  // Dynamic calculations based on simulator sliders
-  const baseAvail = report.talentAvailabilityScore.score;
-  const baseDiff = report.recruitingDifficultyScore.score;
-
-  const modelFactor = simWorkModel === 'REMOTE' ? 18 : simWorkModel === 'HYBRID' ? 0 : -14;
-  const radiusFactor = Math.round((simRadiusDelta / 50) * 12);
-  const compFactor = Math.round((simCompDelta / 20) * 15);
-
-  const simulatedAvailability = Math.max(5, Math.min(95, baseAvail + modelFactor + radiusFactor + compFactor));
-  const simulatedDifficulty = Math.max(10, Math.min(98, baseDiff - modelFactor - radiusFactor - compFactor));
-
-  const getSimAvailBand = (s: number) => {
-    if (s >= 80) return 'Very High Availability';
-    if (s >= 60) return 'High Availability';
-    if (s >= 40) return 'Moderate Availability';
-    if (s >= 20) return 'Low Availability';
-    return 'Extremely Scarce';
-  };
-
-  const getSimDiffBand = (s: number) => {
-    if (s >= 81) return 'Extremely Difficult';
-    if (s >= 61) return 'Difficult';
-    if (s >= 41) return 'Challenging';
-    if (s >= 21) return 'Manageable';
-    return 'Easy';
-  };
-
-  const simulatedAddressable = Math.round(
-    report.talentSupply.addressable.count *
-      (simWorkModel === 'REMOTE' ? 3.2 : 1 + simRadiusDelta / 100)
-  );
-
   const fiveLayers = [
     {
       num: 1,
@@ -262,155 +228,123 @@ export const TalentDashboardView: React.FC<TalentDashboardViewProps> = ({
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3.5">
           {/* Card 1: Addressable Talent */}
-          <div className="glass-card rounded-2xl p-4 space-y-1">
-            <MetricTooltip
-              label="Addressable Talent"
-              explanation="Total talent headcount matching core job title, required technical skills, and target geography based on public profile indices and repository contributors."
-              className="text-[11px] text-slate-400 uppercase font-semibold font-mono"
-            />
-            <div className="text-2xl font-bold font-mono text-white mt-1">
-              {report.talentSupply.addressable.count.toLocaleString()}
-            </div>
-            <div className="text-[11px] text-slate-400 mt-1 flex items-center justify-between">
-              <span>Meets primary spec</span>
-              <ConfidenceBadge level={report.talentSupply.addressable.confidence} size="sm" />
-            </div>
-          </div>
+          <MetricCard
+            title="Addressable Talent"
+            value={report.talentSupply.addressable.count.toLocaleString()}
+            subtext="Meets primary spec"
+            confidenceLevel={report.talentSupply.addressable.confidence}
+            tooltipExplanation={METHODOLOGY_EXPLANATIONS.addressableTalent}
+            variant="white"
+          />
 
           {/* Card 2: Highly Qualified */}
-          <div className="glass-card rounded-2xl p-4 space-y-1">
-            <MetricTooltip
-              label="Highly Qualified"
-              explanation="Subset possessing 5+ years of verified production-hardened systems experience, senior leadership tier, and domain architecture credentials."
-              className="text-[11px] text-slate-400 uppercase font-semibold font-mono"
-            />
-            <div className="text-2xl font-bold font-mono text-emerald-400 mt-1">
-              {report.talentSupply.highlyQualified.count.toLocaleString()}
-            </div>
-            <div className="text-[11px] text-slate-400 mt-1 flex items-center justify-between">
-              <span>Production hardened</span>
-              <ConfidenceBadge level={report.talentSupply.highlyQualified.confidence} size="sm" />
-            </div>
-          </div>
+          <MetricCard
+            title="Highly Qualified"
+            value={report.talentSupply.highlyQualified.count.toLocaleString()}
+            subtext="Production hardened"
+            confidenceLevel={report.talentSupply.highlyQualified.confidence}
+            tooltipExplanation="Subset possessing 5+ years of verified production-hardened systems experience, senior leadership tier, and domain architecture credentials."
+            variant="emerald"
+          />
 
-          {/* Card 3: Estimated Passive Talent */}
-          <div className="glass-card rounded-2xl p-4 space-y-1">
-            <MetricTooltip
-              label="Estimated Passive Pool"
-              explanation="High-performing engineers not currently active on job boards who require targeted technical messaging and competitive peer recruitment."
-              className="text-[11px] text-slate-400 uppercase font-semibold font-mono"
-            />
-            <div className="text-2xl font-bold font-mono text-amber-400 mt-1">
-              {report.talentSupply.passive.count.toLocaleString()}
-            </div>
-            <div className="text-[11px] text-slate-400 mt-1 flex items-center justify-between">
-              <span>Target outbound</span>
-              <ConfidenceBadge level={report.talentSupply.passive.confidence} size="sm" />
-            </div>
-          </div>
+          {/* Card 3: Estimated Passive Pool */}
+          <MetricCard
+            title="Estimated Passive Pool"
+            value={report.talentSupply.passive.count.toLocaleString()}
+            subtext="Target outbound"
+            confidenceLevel={report.talentSupply.passive.confidence}
+            tooltipExplanation="High-performing engineers not currently active on job boards who require targeted technical messaging and competitive peer recruitment."
+            variant="amber"
+          />
 
           {/* Card 4: Talent Availability */}
-          <div className="glass-card rounded-2xl p-4 space-y-1">
-            <MetricTooltip
-              label="Talent Availability"
-              explanation="Calibrated liquidity index (0-100) reflecting candidate movement rate, open requisitions per engineer, and regional hiring velocity."
-              className="text-[11px] text-slate-400 uppercase font-semibold font-mono"
-            />
-            <div className="text-2xl font-bold font-mono text-cyan-400 mt-1">
-              {report.talentAvailabilityScore.score}<span className="text-xs text-slate-500">/100</span>
-            </div>
-            <div className="text-[11px] text-slate-300 mt-1">{report.talentAvailabilityScore.band}</div>
-          </div>
+          <MetricCard
+            title="Talent Availability"
+            value={report.talentAvailabilityScore.score}
+            unit="/100"
+            subtext={report.talentAvailabilityScore.band}
+            tooltipExplanation={METHODOLOGY_EXPLANATIONS.marketLiquidity}
+            variant="cyan"
+          />
 
           {/* Card 5: Recruiting Difficulty */}
-          <div className="glass-card rounded-2xl p-4 space-y-1">
-            <MetricTooltip
-              label="Recruiting Difficulty"
-              explanation="Calculated based on active competitor job postings vs. estimated passive talent in this geo-fence and target compensation band."
-              className="text-[11px] text-slate-400 uppercase font-semibold font-mono"
-            />
-            <div className="text-2xl font-bold font-mono text-rose-400 mt-1">
-              {report.recruitingDifficultyScore.score}<span className="text-xs text-slate-500">/100</span>
-            </div>
-            <div className="text-[11px] text-slate-300 mt-1">{report.recruitingDifficultyScore.band}</div>
-          </div>
+          <MetricCard
+            title="Recruiting Difficulty"
+            value={report.recruitingDifficultyScore.score}
+            unit="/100"
+            subtext={report.recruitingDifficultyScore.band}
+            tooltipExplanation={METHODOLOGY_EXPLANATIONS.recruitingFriction}
+            variant="rose"
+          />
 
           {/* Card 6: Skill Scarcity */}
-          <div className="glass-card rounded-2xl p-4 space-y-1">
-            <MetricTooltip
-              label="Skill Scarcity"
-              explanation="Measures relative saturation of specialized technical competencies (e.g. low-latency systems, CUDA, distributed consensus) across the active talent market."
-              className="text-[11px] text-slate-400 uppercase font-semibold font-mono"
-            />
-            <div className="text-xl font-bold font-mono text-indigo-400 mt-1">
-              {report.skillsAnalysis.scarceSkills.length > 0 ? 'High / Critical' : 'Moderate'}
-            </div>
-            <div className="text-[11px] text-slate-400 mt-1 truncate">
-              {report.skillsAnalysis.scarceSkills[0]?.name || 'Specialized domain skills'}
-            </div>
-          </div>
+          <MetricCard
+            title="Skill Scarcity"
+            value={report.skillsAnalysis.scarceSkills.length > 0 ? 'High / Critical' : 'Moderate'}
+            subtext={report.skillsAnalysis.scarceSkills[0]?.name || 'Specialized domain skills'}
+            tooltipExplanation={METHODOLOGY_EXPLANATIONS.skillScarcity}
+            variant="indigo"
+          />
 
-          {/* Card 7: Geographic Concentration */}
-          <div className="glass-card rounded-2xl p-4 space-y-1">
-            <MetricTooltip
-              label="Geographic Density"
-              explanation="Spatial cluster density of qualified talent across primary metro corridors and regional feeder commuter zones."
-              className="text-[11px] text-slate-400 uppercase font-semibold font-mono"
-            />
-            <div className="text-xl font-bold font-mono text-white mt-1">
-              {report.geographicMarket.concentrationDensity}
-            </div>
-            <div className="text-[11px] text-slate-400 mt-1">{report.geographicMarket.metroName}</div>
-          </div>
+          {/* Card 7: Geographic Density */}
+          <MetricCard
+            title="Geographic Density"
+            value={report.geographicMarket.concentrationDensity}
+            subtext={report.geographicMarket.metroName}
+            tooltipExplanation="Spatial cluster density of qualified talent across primary metro corridors and regional feeder commuter zones."
+            variant="white"
+          />
 
           {/* Card 8: Competitive Intensity */}
-          <div className="glass-card rounded-2xl p-4 space-y-1">
-            <div className="text-[11px] text-slate-400 uppercase font-semibold font-mono">Competitive Intensity</div>
-            <div className="text-xl font-bold font-mono text-rose-400 mt-1">
-              Very High
-            </div>
-            <div className="text-[11px] text-slate-400 mt-1">{report.competitiveEmployerLandscape.length} Active Competitors</div>
-          </div>
+          <MetricCard
+            title="Competitive Intensity"
+            value="Very High"
+            subtext={`${report.competitiveEmployerLandscape.length} Active Competitors`}
+            tooltipExplanation="Active requisition density across direct product competitors targeting equivalent senior engineering profiles."
+            variant="rose"
+          />
 
-          {/* Card 9: Recommended Target Companies */}
-          <div className="glass-card rounded-2xl p-4 space-y-1">
-            <div className="text-[11px] text-slate-400 uppercase font-semibold font-mono">Target Companies</div>
-            <div className="text-2xl font-bold font-mono text-cyan-400 mt-1">
-              {report.targetCompanies.length} Verified
-            </div>
-            <div className="text-[11px] text-slate-400 mt-1">Tier 1-4 employers</div>
-          </div>
+          {/* Card 9: Target Companies */}
+          <MetricCard
+            title="Target Companies"
+            value={`${report.targetCompanies.length} Verified`}
+            subtext="Tier 1-4 employers"
+            tooltipExplanation="Curated peer employers possessing directly transferable engineering cultures and technology stacks."
+            variant="cyan"
+          />
 
           {/* Card 10: Talent-Adjacent Pools */}
-          <div className="glass-card rounded-2xl p-4 space-y-1">
-            <div className="text-[11px] text-slate-400 uppercase font-semibold font-mono">Adjacent Pools</div>
-            <div className="text-2xl font-bold font-mono text-indigo-400 mt-1">
-              {report.executiveSummary.best5AdjacentTalentPools.length} Pools
-            </div>
-            <div className="text-[11px] text-slate-400 mt-1">Transferable skillsets</div>
-          </div>
+          <MetricCard
+            title="Adjacent Pools"
+            value={`${report.executiveSummary.best5AdjacentTalentPools.length} Pools`}
+            subtext="Transferable skillsets"
+            tooltipExplanation="Alternative engineering and quantitative talent domains capable of ramping into this role within 30-60 days."
+            variant="indigo"
+          />
 
-          {/* Card 11: Geographic Expansion */}
-          <div className="glass-card rounded-2xl p-4 space-y-1">
-            <div className="text-[11px] text-slate-400 uppercase font-semibold font-mono">Recommended Expansion</div>
-            <div className="text-xl font-bold font-mono text-emerald-400 mt-1">
-              +50 Miles
-            </div>
-            <div className="text-[11px] text-slate-400 mt-1">Unlocks +35% talent supply</div>
-          </div>
+          {/* Card 11: Recommended Expansion */}
+          <MetricCard
+            title="Recommended Expansion"
+            value="+50 Miles"
+            subtext="Unlocks +35% talent supply"
+            tooltipExplanation="Calculated geographic commuter expansion identifying secondary commuter clusters and remote satellite hubs."
+            variant="emerald"
+          />
 
-          {/* Card 12: Estimated Search Risk */}
-          <div className="glass-card rounded-2xl p-4 space-y-1">
-            <div className="text-[11px] text-slate-400 uppercase font-semibold font-mono">Estimated Search Risk</div>
-            <div className={`text-xl font-bold font-mono mt-1 ${
-              report.executiveSummary.expectedRecruitingRisk === 'High' || report.executiveSummary.expectedRecruitingRisk === 'Critical'
-                ? 'text-rose-400'
-                : 'text-amber-400'
-            }`}>
-              {report.executiveSummary.expectedRecruitingRisk} Risk
-            </div>
-            <div className="text-[11px] text-slate-400 mt-1">{report.recruitingDifficultyScore.expectedTimeToFillDays} Days TTF</div>
-          </div>
+          {/* Card 12: Estimated Search Risk & TTF */}
+          <MetricCard
+            title="Estimated Search Risk"
+            value={`${report.executiveSummary.expectedRecruitingRisk} Risk`}
+            unit={`• ${report.recruitingDifficultyScore.expectedTimeToFillDays}d TTF`}
+            subtext={`${report.recruitingDifficultyScore.expectedTimeToFillDays} Days TTF`}
+            tooltipExplanation={METHODOLOGY_EXPLANATIONS.ttf}
+            variant={
+              report.executiveSummary.expectedRecruitingRisk === 'High' ||
+              report.executiveSummary.expectedRecruitingRisk === 'Critical'
+                ? 'rose'
+                : 'amber'
+            }
+          />
         </div>
       </div>
 
@@ -428,119 +362,15 @@ export const TalentDashboardView: React.FC<TalentDashboardViewProps> = ({
         onUpgrade={onUpgradePro}
         onStartTrial={onStartTrial}
       >
-        <div className="glass-card rounded-2xl p-6 space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
-          <div>
-            <h4 className="text-sm font-bold text-white flex items-center gap-2">
-              <Sliders className="w-4 h-4 text-cyan-400" />
-              <span>Real-Time Market Sensitivity & Pivot Simulator</span>
-            </h4>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Test how adjusting work model, search radius, or compensation alters market availability and hiring difficulty.
-            </p>
-          </div>
-
-          <button
-            onClick={() => {
-              setSimWorkModel(report.input.workModel.value);
-              setSimRadiusDelta(0);
-              setSimCompDelta(0);
-            }}
-            className="flex items-center gap-1.5 text-xs text-cyan-400 hover:text-cyan-300 font-semibold cursor-pointer transition-colors"
-          >
-            <RefreshCw className="w-3.5 h-3.5" />
-            <span>Reset Baseline</span>
-          </button>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Controls */}
-          <div className="space-y-5 lg:col-span-2">
-            {/* Work Model Toggle */}
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-slate-300">
-                Work Model Policy:
-              </label>
-              <div className="flex gap-2">
-                {(['ON-SITE', 'HYBRID', 'REMOTE'] as WorkModel[]).map((wm) => (
-                  <button
-                    key={wm}
-                    onClick={() => setSimWorkModel(wm)}
-                    className={`px-4 py-2 text-xs font-bold rounded-xl border transition-all cursor-pointer ${
-                      simWorkModel === wm
-                        ? 'accent-gradient text-white glow'
-                        : 'bg-slate-950/60 text-slate-400 border-slate-800 hover:bg-slate-800/80 hover:text-white'
-                    }`}
-                  >
-                    {wm}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Commuting Radius Expansion Slider */}
-            <div className="space-y-2">
-              <div className="flex justify-between text-xs">
-                <span className="font-semibold text-slate-300">
-                  Geographic Search Radius Expansion:
-                </span>
-                <span className="font-mono font-bold text-cyan-400">
-                  +{simRadiusDelta} Miles (Total: {report.input.geography.radiusMiles + simRadiusDelta} mi)
-                </span>
-              </div>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                step="10"
-                value={simRadiusDelta}
-                onChange={(e) => setSimRadiusDelta(parseInt(e.target.value, 10))}
-                className="w-full h-2 bg-slate-950/70 border border-slate-800 rounded-lg appearance-none cursor-pointer accent-cyan-400"
-              />
-            </div>
-
-            {/* Compensation Adjustment Slider */}
-            <div className="space-y-2">
-              <div className="flex justify-between text-xs">
-                <span className="font-semibold text-slate-300">
-                  Compensation Adjustment:
-                </span>
-                <span className="font-mono font-bold text-emerald-400">
-                  {simCompDelta > 0 ? `+${simCompDelta}%` : simCompDelta < 0 ? `${simCompDelta}%` : 'Baseline (0%)'}
-                </span>
-              </div>
-              <input
-                type="range"
-                min="-20"
-                max="30"
-                step="5"
-                value={simCompDelta}
-                onChange={(e) => setSimCompDelta(parseInt(e.target.value, 10))}
-                className="w-full h-2 bg-slate-950/70 border border-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-400"
-              />
-            </div>
-          </div>
-
-          {/* Dynamic Simulated Outcome Score Gauges */}
-          <div className="grid grid-cols-2 gap-3">
-            <ScoreGauge
-              score={simulatedAvailability}
-              title="Simulated Availability"
-              type="availability"
-              band={getSimAvailBand(simulatedAvailability)}
-              subtitle={`Simulated Pool: ~${simulatedAddressable.toLocaleString()}`}
-            />
-
-            <ScoreGauge
-              score={simulatedDifficulty}
-              title="Simulated Difficulty"
-              type="difficulty"
-              band={getSimDiffBand(simulatedDifficulty)}
-              subtitle={`Est. TTF: ${Math.round(report.recruitingDifficultyScore.expectedTimeToFillDays * (simulatedDifficulty / baseDiff))} Days`}
-            />
-          </div>
-        </div>
-      </div>
+        <PivotSimulator
+          baseAvailabilityScore={report.talentAvailabilityScore.score}
+          baseDifficultyScore={report.recruitingDifficultyScore.score}
+          baseAddressableCount={report.talentSupply.addressable.count}
+          baseTimeToFillDays={report.recruitingDifficultyScore.expectedTimeToFillDays || 65}
+          initialWorkModel={report.input.workModel.value}
+          initialRadiusMiles={report.input.geography.radiusMiles}
+          initialBaseSalary={report.input.compensationTarget.min || 200000}
+        />
       </FeatureGate>
     </div>
   );
