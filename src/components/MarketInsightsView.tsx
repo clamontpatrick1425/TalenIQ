@@ -4,6 +4,7 @@ import { CompensationAnalyzer } from './CompensationAnalyzer';
 import { CompetitorHiringIntensityChart } from './CompetitorHiringIntensityChart';
 import { CompanyPoachingHeatmap } from './CompanyPoachingHeatmap';
 import { DataSourcesAuditor } from './DataSourcesAuditor';
+import { LiveMarketSignalsScanner } from './LiveMarketSignalsScanner';
 import {
   DollarSign,
   TrendingUp,
@@ -24,6 +25,7 @@ import {
   Zap,
   Scale,
   Flame,
+  Radio,
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -52,7 +54,7 @@ interface MarketInsightsViewProps {
 }
 
 export const MarketInsightsView: React.FC<MarketInsightsViewProps> = ({ report }) => {
-  const [activeInsightTab, setActiveInsightTab] = useState<'analyzer' | 'poaching' | 'competitors' | 'curves' | 'geo' | 'trends' | 'sources' | 'all'>('analyzer');
+  const [activeInsightTab, setActiveInsightTab] = useState<'web-scanner' | 'analyzer' | 'poaching' | 'competitors' | 'curves' | 'geo' | 'trends' | 'sources' | 'all'>('web-scanner');
   const [compViewMode, setCompViewMode] = useState<'total' | 'base' | 'equity'>('total');
   const [selectedIndustrySector, setSelectedIndustrySector] = useState<string>('ALL');
   const [selectedMetroFilter, setSelectedMetroFilter] = useState<string>(report.input.geography.location);
@@ -421,6 +423,22 @@ export const MarketInsightsView: React.FC<MarketInsightsViewProps> = ({ report }
       {/* Sub-Navigation Tabs Bar */}
       <div className="flex items-center gap-2 overflow-x-auto pb-1 border-b border-slate-800 text-xs font-mono">
         <button
+          id="tab-insights-web-scanner"
+          onClick={() => setActiveInsightTab('web-scanner')}
+          className={`px-4 py-2 rounded-xl font-bold flex items-center gap-2 whitespace-nowrap transition-all cursor-pointer ${
+            activeInsightTab === 'web-scanner'
+              ? 'accent-gradient text-white glow'
+              : 'glass-card text-cyan-300 hover:text-white hover:border-cyan-500/50'
+          }`}
+        >
+          <Radio className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
+          <span>Live Web Signals</span>
+          <span className="px-1.5 py-0.2 rounded text-[9px] bg-cyan-500/20 text-cyan-300 font-bold border border-cyan-500/40">
+            Real-Time
+          </span>
+        </button>
+
+        <button
           id="tab-insights-poaching"
           onClick={() => setActiveInsightTab('poaching')}
           className={`px-4 py-2 rounded-xl font-bold flex items-center gap-2 whitespace-nowrap transition-all cursor-pointer ${
@@ -536,6 +554,11 @@ export const MarketInsightsView: React.FC<MarketInsightsViewProps> = ({ report }
           <span>Full Market View (All)</span>
         </button>
       </div>
+
+      {/* RENDER -1: Real-Time Live Web Market Signals Scanner */}
+      {(activeInsightTab === 'web-scanner' || activeInsightTab === 'all') && (
+        <LiveMarketSignalsScanner report={report} />
+      )}
 
       {/* RENDER 0: Company Poaching Targets Heatmap */}
       {(activeInsightTab === 'poaching' || activeInsightTab === 'all') && (
